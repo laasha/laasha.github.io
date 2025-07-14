@@ -107,7 +107,1577 @@
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
-<!-- The rest of your content is preserved. -->
-{{CONTENT_PLACEHOLDER}}
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navito – Life-Line Visualization & Coaching Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isoWeek.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simplemde@1.11.2/dist/simplemde.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplemde@1.11.2/dist/simplemde.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <style>
+        :root {
+            --brand-color: #00F6FF;
+            --accent-color: #FF2ED1;
+            --base-color: #0A0A0A; 
+            --text-color: #E0E0E0;
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--base-color);
+            color: var(--text-color);
+            overscroll-behavior: none;
+        }
+        .glass-effect {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .brand-text { color: var(--brand-color); }
+        .accent-text { color: var(--accent-color); }
+        .active-nav-link { background-color: rgba(0, 246, 255, 0.1); }
+        .sidebar-icon { width: 24px; height: 24px; flex-shrink: 0; }
+        .navito-logo { width: 32px; height: 32px; margin-bottom: 1rem; fill: var(--brand-color); }
+
+        .toast-banner {
+            position: fixed;
+            top: 20px; 
+            right: 20px; 
+            padding: 12px 24px;
+            border-radius: 0.5rem; 
+            z-index: 2000; /* Ensure toasts are above modals */
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); 
+            max-width: 300px;
+        }
+        .toast-error { background-color: #B91C1C; color: white; } 
+        .toast-success { background-color: #047857; color: white; } 
+        .toast-info { background-color: #0E7490; color: white; } 
+
+
+        .editor-toolbar a, .editor-toolbar > .active, .editor-toolbar > button {
+            color: var(--text-color) !important;
+        }
+        .editor-toolbar a:hover, .editor-toolbar > .active:hover, .editor-toolbar > button:hover {
+            background-color: rgba(255,255,255,0.1) !important;
+            border-color: var(--brand-color) !important;
+        }
+        .CodeMirror {
+            background-color: rgba(0,0,0,0.2) !important;
+            color: var(--text-color) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 0.5rem;
+        }
+        .CodeMirror-cursor {
+            border-left: 1px solid var(--brand-color) !important;
+        }
+        .cm-s-easymde .cm-comment { color: #777; }
+        .cm-s-easymde .cm-keyword { color: var(--accent-color); }
+        .cm-s-easymde .cm-string { color: var(--brand-color); }
+        .cm-s-easymde .cm-header { color: var(--accent-color); }
+        .cm-s-easymde .cm-link { color: var(--brand-color); text-decoration: underline;}
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--brand-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+        
+        * { scrollbar-width: thin; scrollbar-color: var(--brand-color) rgba(255, 255, 255, 0.05); }
+
+        .accordion-header { cursor: pointer; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .accordion-content.open { max-height: 1500px; }
+
+        .pin-color-personal { background-color: #3B82F6; } 
+        .pin-color-relationship { background-color: #EC4899; } 
+        .pin-color-learning { background-color: #F97316; } 
+        .pin-color-impact { background-color: #10B981; } 
+        .pin-color-work { background-color: #6366F1; } 
+        .pin-color-other { background-color: #A855F7; } 
+        .pin-color-exercise { background-color: #84CC16; } 
+        .pin-color-default { background-color: var(--brand-color); }
+        .prose { max-width: none; } 
+        .prose-invert { color: var(--text-color); }
+        .prose-invert strong { color: var(--brand-color); }
+        .prose-invert em { color: var(--accent-color); }
+        .prose-invert ul > li::before { background-color: var(--brand-color); }
+        .prose-invert a { color: var(--accent-color); text-decoration: underline; }
+        .prose-invert a:hover { color: var(--brand-color); }
+        .prose-invert pre { background-color: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 0.25rem; }
+
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <nav class="w-20 hover:w-64 fixed left-0 top-0 h-full glass-effect p-4 flex flex-col items-center space-y-6 transition-all duration-300 ease-in-out group z-50">
+        <svg class="navito-logo" viewBox="0 0 100 40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 20 Q 15 5, 25 20 T 45 20 Q 55 35, 65 20 T 85 20 Q 90 10, 95 20" stroke="currentColor" stroke-width="4" fill="none" stroke-linecap="round"/>
+        </svg>
+
+        <a href="#/" class="nav-link flex items-center space-x-3 p-3 rounded-xl w-full overflow-hidden" data-route="/">
+            <svg class="sidebar-icon brand-text" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zm0-8h14V7H7v2z"></path></svg>
+            <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100 whitespace-nowrap">მთავარი</span>
+        </a>
+        <a href="#/past" class="nav-link flex items-center space-x-3 p-3 rounded-xl w-full overflow-hidden" data-route="/past">
+            <svg class="sidebar-icon brand-text" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1s-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 15H5V5h14v13z"></path><path d="M11 17h2v-3.17l1.62 1.62 1.41-1.41-4.03-4.03-4.03 4.03 1.41 1.41L11 13.83z"></path></svg>
+            <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100 whitespace-nowrap">წარსული</span>
+        </a>
+        <a href="#/present" class="nav-link flex items-center space-x-3 p-3 rounded-xl w-full overflow-hidden" data-route="/present">
+            <svg class="sidebar-icon brand-text" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"></path></svg>
+            <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100 whitespace-nowrap">აწმყო</span>
+        </a>
+        <a href="#/future" class="nav-link flex items-center space-x-3 p-3 rounded-xl w-full overflow-hidden" data-route="/future">
+            <svg class="sidebar-icon brand-text" viewBox="0 0 24 24" fill="currentColor"><path d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path></svg>
+            <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100 whitespace-nowrap">მომავალი</span>
+        </a>
+        
+        <div class="mt-auto w-full p-2 overflow-hidden">
+             <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
+                <h4 class="text-sm font-semibold mb-2 whitespace-nowrap">Navito-Guide</h4>
+                <div id="chat-assistant-display" class="h-32 bg-black/20 rounded-lg p-2 text-xs overflow-y-auto mb-2">
+                    <p class="text-gray-400">AI ჩატი...</p>
+                </div>
+                <input type="text" id="chat-input" class="w-full p-1.5 text-xs bg-black/30 border border-white/10 rounded-md focus:ring-1 focus:ring-[var(--brand-color)] focus:border-[var(--brand-color)] outline-none" placeholder="ჰკითხე Navito-ს...">
+             </div>
+        </div>
+    </nav>
+
+    <main id="router-outlet" class="flex-1 ml-20 p-6 sm:p-8 overflow-y-auto">
+    </main>
+
+    <div id="modal-container" class="fixed inset-0 bg-black/70 flex items-center justify-center z-[100] hidden p-4">
+        <div id="modal-content" class="glass-effect p-6 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed top-5 right-5 z-[2000] space-y-2"></div>
+
+    <script type="module">
+        // Helper libraries
+        const { get, set, keys: idbKeys, del, clear: idbClear, createStore } = idbKeyval;
+        dayjs.extend(window.dayjs_plugin_isoWeek);
+        dayjs.extend(window.dayjs_plugin_utc);
+        dayjs.extend(window.dayjs_plugin_timezone);
+        dayjs.tz.setDefault(dayjs.tz.guess());
+
+        // --- Application Constants & Config ---
+        const APP_NAME = "Navito";
+        const DB_NAME = 'navito_store';
+        const ITEMS_KEY = 'life_items';
+        const CHAT_HISTORY_KEY = 'chat_history';
+        
+        const API_KEY = "AIzaSyBhZ2oiH4yUwBRxhRhjrLd5om65bGKNLmg"; // User's API Key
+        const GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
+        const GEMINI_MODEL_TEXT = "gemini-2.0-flash"; 
+        const GEMINI_MODEL_JSON = "gemini-2.0-flash"; 
+
+        const ROUTES = {
+            '/': 'renderHomePage',
+            '/past': 'renderPastPage',
+            '/present': 'renderPresentPage',
+            '/future': 'renderFuturePage'
+        };
+        const ITEM_CATEGORIES = ["personal", "relationship", "learning", "impact", "work", "other"];
+        const ITEM_TYPES = ["goal", "event", "note", "exercise"];
+
+        // --- Global State ---
+        let lifeItems = []; 
+        let chatHistory = []; 
+
+        // --- Event Bus ---
+        window.navitoBus = {
+            _listeners: {},
+            on(eventName, callback) {
+                if (!this._listeners[eventName]) this._listeners[eventName] = [];
+                this._listeners[eventName].push(callback);
+                console.log(`[NavitoBus] Listener added for: ${eventName}`);
+            },
+            emit(eventName, payload) {
+                console.log(`[NavitoBus] Emitting: ${eventName}`, payload);
+                if (this._listeners[eventName]) {
+                    this._listeners[eventName].forEach(callback => {
+                        try { callback(payload); } 
+                        catch (e) { console.error(`[NavitoBus] Error in listener for ${eventName}:`, e); }
+                    });
+                }
+            },
+            remove(eventName, callback) {
+                if (this._listeners[eventName]) {
+                    this._listeners[eventName] = this._listeners[eventName].filter(cb => cb !== callback);
+                }
+            }
+        };
+        
+        // --- Toast Notifications (window.toast) ---
+        window.toast = function(message, type = 'info', duration = 3000) {
+            const toastContainer = document.getElementById('toast-container');
+            const toastElement = document.createElement('div');
+            toastElement.className = `toast-banner ${
+                type === 'error' ? 'toast-error' : 
+                type === 'success' ? 'toast-success' : 'toast-info'
+            }`;
+            toastElement.textContent = message;
+            toastContainer.appendChild(toastElement);
+            setTimeout(() => { toastElement.remove(); }, duration);
+        }
+
+        // --- Modal ---
+        const modalContainer = document.getElementById('modal-container');
+        const modalContent = document.getElementById('modal-content');
+
+        function openModal(contentHtml, onOpenCallback) {
+            modalContent.innerHTML = contentHtml;
+            modalContainer.classList.remove('hidden');
+            if (typeof onOpenCallback === 'function') onOpenCallback();
+            modalContainer.addEventListener('click', function closeModalOnClickOutside(event) {
+                if (event.target === modalContainer) {
+                    closeModal();
+                    modalContainer.removeEventListener('click', closeModalOnClickOutside);
+                }
+            });
+        }
+
+        function closeModal() {
+            modalContent.innerHTML = '';
+            modalContainer.classList.add('hidden');
+        }
+        
+        // --- Database Operations ---
+        const navitoStore = createStore(DB_NAME, 'default-store'); 
+
+        async function loadAllDataFromDB() {
+            try {
+                const items = await get(ITEMS_KEY, navitoStore);
+                lifeItems = items ? items : [];
+                const history = await get(CHAT_HISTORY_KEY, navitoStore);
+                chatHistory = history ? history : [];
+                window.navitoBus.emit('data:loaded', { lifeItems, chatHistory });
+            } catch (err) {
+                console.error('IndexedDB-დან ჩატვირთვის შეცდომა:', err);
+                window.toast('მონაცემთა ბაზის ჩატვირთვის შეცდომა', 'error');
+                lifeItems = []; chatHistory = [];
+            }
+        }
+
+        async function saveLifeItemsToDB() {
+            try { await set(ITEMS_KEY, lifeItems, navitoStore); } 
+            catch (err) { console.error('Life Items IndexedDB-ში შენახვის შეცდომა:', err); window.toast('Life Items შენახვის შეცდომა', 'error'); }
+        }
+        async function saveChatHistoryToDB() {
+            try { await set(CHAT_HISTORY_KEY, chatHistory, navitoStore); } 
+            catch (err) { console.error('Chat History IndexedDB-ში შენახვის შეცდომა:', err); window.toast('Chat History შენახვის შეცდომა', 'error');}
+        }
+
+        async function addOrUpdateLifeItem(item) {
+            const now = dayjs().toISOString();
+            const existingItemIndex = lifeItems.findIndex(i => i.id === item.id);
+            if (existingItemIndex > -1) {
+                lifeItems[existingItemIndex] = { ...lifeItems[existingItemIndex], ...item, updatedAt: now };
+                window.navitoBus.emit('item:updated', lifeItems[existingItemIndex]);
+            } else {
+                item.id = item.id || `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                item.createdAt = now; item.updatedAt = now;
+                lifeItems.push(item);
+                window.navitoBus.emit('item:created', item);
+            }
+            await saveLifeItemsToDB();
+        }
+
+        async function removeLifeItem(itemId) {
+            const itemToRemove = lifeItems.find(i => i.id === itemId);
+            if (itemToRemove) {
+                lifeItems = lifeItems.filter(i => i.id !== itemId);
+                await saveLifeItemsToDB();
+                window.navitoBus.emit('item:deleted', itemToRemove); 
+            }
+        }
+        
+        function getLifeItemById(itemId) { 
+            return lifeItems.find(i => i.id === itemId);
+        }
+
+        // --- Life-Line Waveform API & Canvas Logic ---
+        const lifeWaveModule = (() => {
+            let canvas, ctx;
+            let currentZoomLevel = 2; 
+            const zoomLevels = [ 
+                { name: '24 საათი', durationDays: 1 }, { name: '1 კვირა', durationDays: 7 },
+                { name: '1 თვე', durationDays: 30 }, { name: '1 წელი', durationDays: 365 },
+                { name: 'მთელი ცხოვრება', durationDays: 365 * 80 } 
+            ];
+            let viewCenterDate = dayjs(); 
+            let currentPins = []; 
+
+            const WAVE_AMPLITUDE = 50;
+            const WAVE_FREQUENCY_BASE = 0.005; 
+            const PIN_RADIUS = 5;
+
+            const publicApi = {
+                init, 
+                zoom: (level) => { 
+                    currentZoomLevel = Math.max(0, Math.min(level, zoomLevels.length - 1));
+                    const zoomSlider = document.getElementById('zoom-slider');
+                    if(zoomSlider) zoomSlider.value = currentZoomLevel;
+                    draw(); 
+                },
+                centerToday: () => { 
+                    viewCenterDate = dayjs();
+                    draw();
+                },
+                getCurrentZoomLevel: () => currentZoomLevel,
+                getZoomLevels: () => zoomLevels.map(z => z.name),
+            };
+
+            function init() { 
+                canvas = document.getElementById('lifeWaveCanvas');
+                if (!canvas) return;
+                ctx = canvas.getContext('2d');
+                resizeCanvas();
+                window.addEventListener('resize', () => { resizeCanvas(); draw(); });
+                setupCanvasInteractions();
+                window.navitoBus.on('item:created', refreshAndDraw);
+                window.navitoBus.on('item:updated', refreshAndDraw);
+                window.navitoBus.on('item:deleted', refreshAndDraw);
+                window.navitoBus.on('data:loaded', (data) => { refreshPins(data.lifeItems); draw(); });
+                canvas.style.cursor = 'grab';
+                refreshPins(lifeItems); 
+                draw();
+            }
+
+            function refreshAndDraw(changedItem) { refreshPins(lifeItems); draw(); }
+
+            function setupCanvasInteractions() {
+                let isPanning = false; let lastPanX;
+                canvas.addEventListener('mousedown', (e) => {
+                    if (handlePinMouseDown(e)) return; 
+                    isPanning = true; lastPanX = e.clientX; canvas.style.cursor = 'grabbing';
+                });
+                canvas.addEventListener('mousemove', (e) => {
+                    if (draggedPin) { handlePinMouseMove(e); return; }
+                    if (isPanning) {
+                        const dx = e.clientX - lastPanX; lastPanX = e.clientX;
+                        const daysPerPixel = zoomLevels[currentZoomLevel].durationDays / canvas.width;
+                        const dateShiftDays = dx * daysPerPixel;
+                        viewCenterDate = viewCenterDate.subtract(dateShiftDays, 'day');
+                        draw(); return;
+                    }
+                    handleTooltipMouseMove(e); 
+                });
+                canvas.addEventListener('mouseup', (e) => {
+                    if (draggedPin) handlePinMouseUp(e); 
+                    if (isPanning) isPanning = false;
+                    canvas.style.cursor = 'grab';
+                });
+                canvas.addEventListener('mouseleave', () => {
+                    if (draggedPin) handlePinMouseUp(null); 
+                    isPanning = false; activeTooltipPin = null; 
+                    canvas.style.cursor = 'grab'; draw(); 
+                });
+                canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const newZoomLevel = e.deltaY > 0 
+                        ? Math.min(zoomLevels.length - 1, currentZoomLevel + 1)
+                        : Math.max(0, currentZoomLevel - 1);
+                    if (newZoomLevel !== currentZoomLevel) publicApi.zoom(newZoomLevel);
+                });
+                canvas.addEventListener('dblclick', handleCanvasDblClick);
+            }
+            
+            function getPinColor(item) {
+                if (item.category) {
+                    let hash = 0;
+                    for (let i = 0; i < item.category.length; i++) hash = item.category.charCodeAt(i) + ((hash << 5) - hash);
+                    const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+                    const color = "#" + "00000".substring(0, 6 - c.length) + c;
+                    if (item.type === 'exercise') return `var(--lime-500, ${color})`; 
+                    switch (item.category) {
+                        case 'personal': return `var(--blue-500, ${color})`;
+                        case 'relationship': return `var(--pink-500, ${color})`;
+                        case 'learning': return `var(--orange-500, ${color})`;
+                        case 'impact': return `var(--emerald-500, ${color})`;
+                        case 'work': return `var(--indigo-500, ${color})`;
+                        case 'other': return `var(--purple-500, ${color})`;
+                        default: return color; 
+                    }
+                }
+                return item.type === 'goal' ? 'var(--accent-color)' : 'var(--brand-color)';
+            }
+
+            function resizeCanvas() {
+                if (!canvas) return;
+                const container = canvas.parentElement;
+                canvas.width = container ? container.clientWidth : window.innerWidth - 100;
+                canvas.height = container ? (container.clientHeight > 200 ? container.clientHeight : 300) : 300;
+            }
+            
+            function dateToX(date) {
+                const currentZoom = zoomLevels[currentZoomLevel];
+                const totalDurationMs = currentZoom.durationDays * 24 * 60 * 60 * 1000;
+                const viewStartDate = viewCenterDate.subtract(currentZoom.durationDays / 2, 'day');
+                const dateMs = dayjs(date).valueOf(); const startMs = viewStartDate.valueOf();
+                const relativeMs = dateMs - startMs;
+                return (relativeMs / totalDurationMs) * canvas.width;
+            }
+
+            function xToDate(x) {
+                const currentZoom = zoomLevels[currentZoomLevel];
+                const totalDurationMs = currentZoom.durationDays * 24 * 60 * 60 * 1000;
+                const viewStartDate = viewCenterDate.subtract(currentZoom.durationDays / 2, 'day');
+                const relativeMs = (x / canvas.width) * totalDurationMs;
+                return dayjs(viewStartDate.valueOf() + relativeMs);
+            }
+
+            function drawWave() { 
+                if (!ctx || !canvas) return;
+                const centerY = canvas.height / 2; const width = canvas.width;
+                const gradient = ctx.createLinearGradient(0, 0, width, 0);
+                gradient.addColorStop(0, 'rgba(0, 246, 255, 0.3)');
+                gradient.addColorStop(0.5, 'rgba(255, 46, 209, 0.8)');
+                gradient.addColorStop(1, 'rgba(0, 246, 255, 0.3)');
+                ctx.beginPath(); ctx.moveTo(0, centerY);
+                for (let x = 0; x < width; x++) {
+                    const timePoint = xToDate(x).valueOf() / (1000 * 60 * 60);
+                    const sin1 = Math.sin(timePoint*WAVE_FREQUENCY_BASE*5+1)*0.3; const cos1 = Math.cos(timePoint*WAVE_FREQUENCY_BASE*3-0.5)*0.25;
+                    const sin2 = Math.sin(timePoint*WAVE_FREQUENCY_BASE*10-2)*0.2; const cos2 = Math.cos(timePoint*WAVE_FREQUENCY_BASE*7+1.5)*0.15;
+                    const sin3 = Math.sin(timePoint*WAVE_FREQUENCY_BASE*1.5+0.5)*0.1;
+                    const yOffset = (sin1+cos1+sin2+cos2+sin3)*WAVE_AMPLITUDE;
+                    ctx.lineTo(x, centerY + yOffset);
+                }
+                ctx.strokeStyle = gradient; ctx.lineWidth = 3; ctx.stroke();
+            }
+
+            function drawTodayMarker() {
+                if (!ctx || !canvas) return;
+                const todayX = dateToX(dayjs());
+                if (todayX >= 0 && todayX <= canvas.width) {
+                    ctx.beginPath(); ctx.moveTo(todayX, 0); ctx.lineTo(todayX, canvas.height);
+                    ctx.strokeStyle = 'rgba(0, 246, 255, 0.7)'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]); ctx.stroke();
+                    ctx.setLineDash([]); ctx.fillStyle = 'rgba(0, 246, 255, 0.7)'; ctx.font = '10px Inter';
+                    ctx.textAlign = 'center'; ctx.fillText('დღეს', todayX, 15);
+                }
+            }
+            
+            let activeTooltipPin = null;
+
+            function drawPins() {
+                if (!ctx || !canvas || !currentPins) return;
+                const centerY = canvas.height / 2;
+                currentPins.forEach(pin => {
+                    const pinDate = dayjs(pin.dateISO); const x = dateToX(pinDate);
+                    if (x < -PIN_RADIUS * 5 || x > canvas.width + PIN_RADIUS * 5) return;
+                    const timePoint = pinDate.valueOf()/(1000*60*60);
+                    const sin1 = Math.sin(timePoint*WAVE_FREQUENCY_BASE*5+1)*0.3; const cos1 = Math.cos(timePoint*WAVE_FREQUENCY_BASE*3-0.5)*0.25;
+                    const sin2 = Math.sin(timePoint*WAVE_FREQUENCY_BASE*10-2)*0.2; const cos2 = Math.cos(timePoint*WAVE_FREQUENCY_BASE*7+1.5)*0.15;
+                    const sin3 = Math.sin(timePoint*WAVE_FREQUENCY_BASE*1.5+0.5)*0.1;
+                    const yOffset = (sin1+cos1+sin2+cos2+sin3)*WAVE_AMPLITUDE;
+                    const y = centerY + yOffset;
+                    ctx.beginPath(); ctx.arc(x, y, PIN_RADIUS, 0, Math.PI * 2);
+                    const colorStyle = getPinColor(pin);
+                    if (colorStyle.startsWith('var(')) {
+                        const cssVarName = colorStyle.match(/--[a-zA-Z0-9-]+/);
+                        if (cssVarName && cssVarName[0]) {
+                            const computedColor = window.getComputedStyle(document.documentElement).getPropertyValue(cssVarName[0]);
+                            ctx.fillStyle = computedColor.trim() || (pin.type === 'goal' ? 'var(--accent-color)' : 'var(--brand-color)');
+                        } else { ctx.fillStyle = (pin.type === 'goal' ? 'var(--accent-color)' : 'var(--brand-color)'); }
+                    } else { ctx.fillStyle = colorStyle; }
+                    ctx.fill(); ctx.strokeStyle = 'var(--base-color)'; ctx.lineWidth = 1.5; ctx.stroke();
+                    pin._renderX = x; pin._renderY = y;
+                });
+
+                if (activeTooltipPin && activeTooltipPin._renderX !== undefined) {
+                    const x = activeTooltipPin._renderX; const y = activeTooltipPin._renderY;
+                    const tooltipText = `${activeTooltipPin.title} (${dayjs(activeTooltipPin.dateISO).format('YYYY-MM-DD')})`;
+                    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                    const textMetrics = ctx.measureText(tooltipText);
+                    const tooltipWidth = textMetrics.width + 20; const tooltipHeight = 30;
+                    let tooltipX = x + 10; let tooltipY = y - tooltipHeight - 5;
+                    if (tooltipX + tooltipWidth > canvas.width) tooltipX = x - tooltipWidth - 10;
+                    if (tooltipY < 0) tooltipY = y + 15;
+                    ctx.fillRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight);
+                    ctx.fillStyle = 'white'; ctx.font = '12px Inter'; ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle'; ctx.fillText(tooltipText, tooltipX + 10, tooltipY + tooltipHeight / 2);
+                }
+            }
+
+            function drawGrid() {
+                if (!ctx || !canvas) return;
+                const currentZoomInfo = zoomLevels[currentZoomLevel];
+                const viewStartDate = viewCenterDate.subtract(currentZoomInfo.durationDays / 2, 'day');
+                const viewEndDate = viewCenterDate.add(currentZoomInfo.durationDays / 2, 'day');
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5; ctx.font='10px Inter'; ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.textAlign='center';
+                let incrementUnit='day', incrementStep=1;
+                if(currentZoomInfo.durationDays <= 1){incrementUnit='hour'; incrementStep=3;}
+                else if(currentZoomInfo.durationDays <= 7){incrementUnit='day'; incrementStep=1;}
+                else if(currentZoomInfo.durationDays <= 30*3){incrementUnit='day'; incrementStep=7;}
+                else if(currentZoomInfo.durationDays <= 365*2){incrementUnit='month'; incrementStep=1;}
+                else{incrementUnit='year'; incrementStep=1;}
+                let currentDate = viewStartDate.startOf(incrementUnit === 'hour' ? 'day' : incrementUnit);
+                if(incrementUnit === 'hour') currentDate = viewStartDate.startOf('hour');
+                while(currentDate.isBefore(viewEndDate) || currentDate.isSame(viewEndDate)){
+                    const x = dateToX(currentDate);
+                    if(x>=0 && x<=canvas.width){
+                        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
+                        let labelFormat = 'D MMM';
+                        if(incrementUnit==='hour')labelFormat='HH:mm';
+                        else if(incrementUnit==='month')labelFormat='MMM YY';
+                        else if(incrementUnit==='year')labelFormat='YYYY';
+                        ctx.fillText(currentDate.format(labelFormat),x,canvas.height-5);
+                    }
+                    currentDate = currentDate.add(incrementStep,incrementUnit);
+                }
+            }
+
+            function draw() {
+                if (!ctx || !canvas) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawGrid(); drawWave(); drawPins(); drawTodayMarker();
+            }
+            
+            let draggedPin = null; let dragOffsetX = 0;
+
+            function handlePinMouseDown(event) {
+                if (!canvas) return false;
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left; const mouseY = event.clientY - rect.top;
+                for (let i = currentPins.length - 1; i >= 0; i--) {
+                    const pin = currentPins[i];
+                    if (pin._renderX === undefined || pin._renderY === undefined) continue;
+                    const dist = Math.sqrt((mouseX - pin._renderX)**2 + (mouseY - pin._renderY)**2);
+                    if (dist <= PIN_RADIUS + 5) {
+                        draggedPin = pin; dragOffsetX = mouseX - pin._renderX;
+                        canvas.style.cursor = 'grabbing'; return true; 
+                    }
+                } return false; 
+            }
+
+            function handlePinMouseMove(event) { if (!draggedPin || !canvas) return; }
+            
+            function handleTooltipMouseMove(event) { 
+                 if (!canvas) return;
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left; const mouseY = event.clientY - rect.top;
+                let foundPin = null;
+                for (let i = currentPins.length - 1; i >= 0; i--) {
+                    const pin = currentPins[i];
+                     if (pin._renderX === undefined || pin._renderY === undefined) continue;
+                    const dist = Math.sqrt((mouseX - pin._renderX)**2 + (mouseY - pin._renderY)**2);
+                    if (dist <= PIN_RADIUS + 2) { foundPin = pin; break; }
+                }
+                if (foundPin) {
+                    if (activeTooltipPin !== foundPin) { activeTooltipPin = foundPin; draw(); }
+                    canvas.style.cursor = 'pointer';
+                } else {
+                    if (activeTooltipPin) { activeTooltipPin = null; draw(); }
+                    canvas.style.cursor = 'grab';
+                }
+            }
+
+            async function handlePinMouseUp(event) {
+                if (!draggedPin || !canvas) return;
+                let finalX;
+                if (event) {
+                    const rect = canvas.getBoundingClientRect();
+                    const mouseX = event.clientX - rect.left;
+                    finalX = mouseX - dragOffsetX;
+                } else { finalX = draggedPin._renderX; }
+                const newDate = xToDate(finalX);
+                const updatedItem = { ...draggedPin, dateISO: newDate.toISOString() };
+                delete updatedItem._renderX; delete updatedItem._renderY;
+                await addOrUpdateLifeItem(updatedItem); 
+                console.log(`Life Item '${draggedPin.title}' moved to ${newDate.format('YYYY-MM-DD')}`);
+                draggedPin = null;
+            }
+            
+            function handleCanvasDblClick(event) {
+                if (!canvas) return;
+                const rect = canvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left; const mouseY = event.clientY - rect.top;
+                for (let i = currentPins.length - 1; i >= 0; i--) {
+                    const pin = currentPins[i];
+                    if (pin._renderX === undefined || pin._renderY === undefined) continue;
+                    const dist = Math.sqrt((mouseX - pin._renderX)**2 + (mouseY - pin._renderY)**2);
+                    if (dist <= PIN_RADIUS + 5) {
+                        console.log('ორმაგი კლიკი Life Item-ზე:', pin);
+                        openLifeItemEditModal(pin.id); return;
+                    }
+                }
+            }
+            
+            function refreshPins(updatedLifeItems) {
+                currentPins = updatedLifeItems.filter(item => item.dateISO).map(item => ({...item})); 
+                console.log('Waveform pins განახლდა:', currentPins.length);
+            }
+            window.lifeWave = publicApi; 
+            return publicApi;
+        })();
+
+        // --- Router ---
+        const routerOutlet = document.getElementById('router-outlet');
+        function navigateTo(path) { window.location.hash = path; }
+        
+        function renderRoute(path) {
+            const routeHandlerName = ROUTES[path];
+            if (routeHandlerName && typeof window[routeHandlerName] === 'function') {
+                routerOutlet.innerHTML = ''; window[routeHandlerName](routerOutlet); updateActiveNavLink(path);
+            } else { routerOutlet.innerHTML = `<h1 class="text-2xl text-red-500">404 - გვერდი ვერ მოიძებნა: ${path}</h1>`; }
+        }
+
+        function updateActiveNavLink(currentPath) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active-nav-link', 'brand-text'); link.classList.add('text-gray-400'); 
+                const icon = link.querySelector('.sidebar-icon');
+                if (icon) icon.classList.remove('brand-text');
+                if (link.dataset.route === currentPath) {
+                    link.classList.add('active-nav-link', 'brand-text'); link.classList.remove('text-gray-400');
+                    if (icon) icon.classList.add('brand-text');
+                }
+            });
+        }
+
+        // --- Page Render Functions ---
+        window.renderHomePage = function(outlet) {
+            outlet.innerHTML = `
+                <div class="h-full flex flex-col">
+                    <header class="p-4 flex justify-between items-center">
+                        <h1 class="text-3xl font-bold brand-text">Life-Line Waveform</h1>
+                        <div class="flex items-center space-x-3">
+                            <label for="zoom-slider" class="text-sm whitespace-nowrap">მასშტაბი:</label>
+                            <input type="range" id="zoom-slider" min="0" max="4" value="${lifeWaveModule.getCurrentZoomLevel()}" class="w-32 accent-[var(--brand-color)]">
+                            <span id="zoom-label" class="text-sm w-28 text-right">${lifeWaveModule.getZoomLevels()[lifeWaveModule.getCurrentZoomLevel()]}</span>
+                            <button id="center-today-btn" class="p-2 bg-[var(--accent-color)]/80 hover:bg-[var(--accent-color)] text-white rounded-lg text-sm">დღეს</button>
+                        </div>
+                    </header>
+                    <div class="flex-grow p-1 relative min-h-[300px] md:min-h-[400px]">
+                        <canvas id="lifeWaveCanvas" class="rounded-lg glass-effect"></canvas>
+                    </div>
+                </div>`;
+            const canvasElement = document.getElementById('lifeWaveCanvas');
+            if (window.lifeWave && typeof window.lifeWave.init === 'function') {
+                if (!canvasElement._initialized) { window.lifeWave.init(); canvasElement._initialized = true; } 
+                else { window.navitoBus.emit('item:refreshAll', lifeItems); }
+            }
+            document.getElementById('zoom-slider').addEventListener('input', (e) => {
+                const level = parseInt(e.target.value); lifeWaveModule.zoom(level);
+                document.getElementById('zoom-label').textContent = lifeWaveModule.getZoomLevels()[level];
+            });
+            document.getElementById('center-today-btn').addEventListener('click', lifeWaveModule.centerToday);
+        }
+
+        // --- Exercise Module Factory ---
+        function createExerciseModule(slug, title, description, contentFn, initialDataFn) {
+            const exerciseId = `exercise-${slug}`;
+            let currentExerciseData = initialDataFn ? initialDataFn() : {}; 
+            const module = {
+                id: exerciseId, slug: slug,
+                mount: (rootElement, existingItemData) => { 
+                    if (existingItemData && existingItemData.payload) {
+                        currentExerciseData = JSON.parse(JSON.stringify(existingItemData.payload)); 
+                        currentExerciseData.itemId = existingItemData.id; 
+                    } else { currentExerciseData = initialDataFn ? initialDataFn() : {}; delete currentExerciseData.itemId; }
+                    const isMobile = window.innerWidth < 640;
+                    const wrapperClass = isMobile ? 'mb-4' : 'glass-effect rounded-xl p-6 shadow-md';
+                    const headerClass = isMobile ? 'accordion-header bg-white/5 p-3 rounded-t-lg flex justify-between items-center' : 'mb-4';
+                    const contentClass = isMobile ? 'accordion-content bg-white/5 p-4 rounded-b-lg' : '';
+                    const exerciseHTML = `
+                        <div id="${exerciseId}" class="${wrapperClass}">
+                            <div class="${headerClass}">
+                                <h3 class="text-xl font-semibold brand-text">${title}</h3>
+                                ${isMobile ? '<svg class="w-6 h-6 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>' : ''}
+                            </div>
+                            <div class="exercise-content-host ${contentClass}">
+                                <p class="text-sm text-gray-400 mb-4">${description}</p>
+                                <div class="exercise-ui-container mb-4 min-h-[100px]"></div>
+                                <div class="result-pane bg-black/20 p-3 rounded-lg min-h-[50px] max-h-48 overflow-y-auto mb-4 hidden">AI პასუხი...</div>
+                                <div class="flex space-x-3">
+                                    <button class="save-btn flex-1 p-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm">შედეგის შენახვა 🔒</button>
+                                    <button class="ai-hint-btn flex-1 p-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm">AI რჩევა ✨</button>
+                                    <button class="reset-btn flex-1 p-2 bg-red-700 hover:bg-red-600 text-white rounded-lg text-sm">გასუფთავება ♻️</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    rootElement.insertAdjacentHTML('beforeend', exerciseHTML);
+                    const currentExerciseElement = document.getElementById(exerciseId);
+                    const uiContainer = currentExerciseElement.querySelector('.exercise-ui-container');
+                    const resultPane = currentExerciseElement.querySelector('.result-pane');
+                    const saveExerciseResultCallback = async (exerciseOutputData) => {
+                        const lifeItemPayload = { slug: slug, score: exerciseOutputData.score || {}, insight: exerciseOutputData.insight || "", details: exerciseOutputData.details || {} };
+                        const itemToSave = {
+                            id: currentExerciseData.itemId || `item_ex_${slug}_${Date.now()}`, type: 'exercise', 
+                            title: exerciseOutputData.title || `${title} (შედეგი)`, dateISO: exerciseOutputData.dateISO || dayjs().toISOString(), 
+                            category: exerciseOutputData.category || 'personal', payload: lifeItemPayload,
+                        };
+                        currentExerciseData.itemId = itemToSave.id; 
+                        await addOrUpdateLifeItem(itemToSave);
+                        window.toast(`${title}: სავარჯიშოს შედეგი შენახულია!`, 'success');
+                        resultPane.innerHTML = `<p class="text-xs text-green-400">შენახულია Life Item: ${itemToSave.title}</p>`;
+                        resultPane.classList.remove('hidden');
+                        window.navitoBus.emit('exercise:finished', itemToSave);
+                    };
+                    const aiHintCallback = async (userPrompt) => {
+                        resultPane.classList.remove('hidden');
+                        resultPane.innerHTML = `<p class="text-xs text-yellow-400 animate-pulse">AI ფიქრობს...</p>`;
+                        try {
+                            const currentDataForAI = module.getData(); 
+                            const promptText = `Provide a helpful tip for the exercise "${slug}". Current user data for this exercise: ${JSON.stringify(currentDataForAI)}. User's specific question: ${userPrompt || "None"}. Keep the tip concise and actionable. If relevant, suggest example data in a simple format.`;
+                            const response = await callGeminiAPI_Text(
+                                `${GEMINI_MODEL_TEXT}:generateContent`,
+                                promptText,
+                                [] 
+                            );
+                            let suggestionHTML = `<p class="text-sm font-semibold mb-1">AI რჩევა:</p>`;
+                            if (response) { 
+                                let htmlTip = response
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                    .replace(/^- (.*)/gm, '<li>$1</li>').replace(/\n/g, '<br>');
+                                if (htmlTip.includes('<li>')) htmlTip = `<ul>${htmlTip}</ul>`;
+                                suggestionHTML += `<div class="text-xs prose prose-sm prose-invert">${htmlTip}</div>`;
+                            } else { suggestionHTML += `<p class="text-xs">AI-მ ვერ შემოგთავაზათ რჩევა ამჯერად.</p>`; }
+                            resultPane.innerHTML = suggestionHTML;
+                        } catch (error) {
+                            resultPane.innerHTML = `<p class="text-xs text-red-400">AI შეცდომა: ${error.message}</p>`;
+                            window.toast('AI კომუნიკაციის შეცდომა', 'error');
+                        }
+                    };
+                    contentFn(uiContainer, currentExerciseData, saveExerciseResultCallback, aiHintCallback);
+                    currentExerciseElement.querySelector('.save-btn').addEventListener('click', () => { module.getData(); saveExerciseResultCallback(currentExerciseData); });
+                    currentExerciseElement.querySelector('.ai-hint-btn').addEventListener('click', () => { const userPrompt = currentExerciseElement.querySelector('.ai-user-prompt-input')?.value; aiHintCallback(userPrompt); });
+                    currentExerciseElement.querySelector('.reset-btn').addEventListener('click', () => {
+                        module.reset(); uiContainer.innerHTML = ''; currentExerciseData = initialDataFn ? initialDataFn() : {}; delete currentExerciseData.itemId; 
+                        contentFn(uiContainer, currentExerciseData, saveExerciseResultCallback, aiHintCallback); 
+                        resultPane.classList.add('hidden'); resultPane.innerHTML = 'AI პასუხი...';
+                        window.toast(`${title}: ფორმა გასუფთავდა`, 'info');
+                    });
+                    if (isMobile) {
+                        const header = currentExerciseElement.querySelector('.accordion-header');
+                        const content = currentExerciseElement.querySelector('.accordion-content');
+                        const icon = header.querySelector('svg');
+                        header.addEventListener('click', () => { content.classList.toggle('open'); icon.classList.toggle('rotate-180'); });
+                    }
+                    aiHintCallback(); 
+                },
+                getData: () => {
+                    const uiContainer = document.getElementById(exerciseId)?.querySelector('.exercise-ui-container');
+                    if (uiContainer && typeof uiContainer.gatherExerciseData === 'function') return uiContainer.gatherExerciseData(); 
+                    return JSON.parse(JSON.stringify(currentExerciseData)); 
+                },
+                setData: (dataToSet) => { 
+                    currentExerciseData = JSON.parse(JSON.stringify(dataToSet));
+                    const uiContainer = document.getElementById(exerciseId)?.querySelector('.exercise-ui-container');
+                    if (uiContainer) uiContainer.innerHTML = ''; 
+                },
+                reset: () => { currentExerciseData = initialDataFn ? initialDataFn() : {}; delete currentExerciseData.itemId; }
+            };
+            return module;
+        }
+        
+        // --- Specific Exercise Definitions ---
+        const exercises = {
+            'swot-me': createExerciseModule('swot-me', 'SWOT-me', 'შეაფასე შენი ძლიერი/სუსტი მხარეები, შესაძლებლობები/საფრთხეები.', swotMeContent, () => ({ S: '', W: '', O: '', T: '', insight: '' })),
+            '5-whys': createExerciseModule('5-whys', '5 რატომ?', 'ჩაეძიე პრობლემის ძირეულ მიზეზს.', fiveWhysContent, () => ({ problem: '', whys: ['', '', '', '', ''], insight: '' })), 
+            'timeline-import': createExerciseModule('timeline-import', 'ისტორიის იმპორტი', 'ატვირთე ან ჩასვი ტექსტი მოვლენების დასამატებლად.', renderPastImporterContent, () => ({ importText: '', importFile: null, parsedItems: [] })), 
+            'habit-tracker': createExerciseModule('habit-tracker', 'ჩვევების ტრეკერი', 'აკონტროლე შენი ყოველდღიური ჩვევები.', habitTrackerContent, () => ({ habits: [{name: 'დილის ვარჯიში', days: Array(7).fill(false) }, {name:'წიგნის კითხვა', days: Array(7).fill(false)}], insight: '' })),
+            'eisenhower-matrix': createExerciseModule('eisenhower-matrix', 'ეიზენჰაუერის მატრიცა', 'დაალაგე ამოცანები მნიშვნელობისა და გადაუდებლობის მიხედვით.', eisenhowerMatrixContent, () => ({ urgentImportant: [], importantNotUrgent: [], urgentNotImportant: [], notUrgentNotImportant: [], insight: '' })),
+            'mindful-breath': createExerciseModule('mindful-breath', 'გაცნობიერებული სუნთქვა', 'დაუთმე დრო სუნთქვით ვარჯიშს.', mindfulBreathContent, () => ({ duration: 1, log: [], insight: '' })),
+            'daily-log': createExerciseModule('daily-log', 'ყოველდღიური ჩანაწერი', 'შეაფასე დღე, ჩაიწერე ფიქრები.', dailyLogContent, () => ({ rating: 3, notes: '', gratitude: '', dateISO: dayjs().toISOString(), insight: '' })),
+            'smart-decompose': createExerciseModule('smart-decompose', 'SMART მიზნის დაშლა', 'დაშალე მიზანი SMART კრიტერიუმებით.', smartDecomposeContent, () => ({ goalTitle: '', specific: '', measurable: '', achievable: '', relevant: '', timeBound: dayjs().add(1, 'month').format('YYYY-MM-DD'), insight: '' })),
+            'life-wheel': createExerciseModule('life-wheel', 'ცხოვრების ბორბალი 360°', 'შეაფასე კმაყოფილება ცხოვრების სხვადასხვა სფეროში.', lifeWheelContent, () => ({ areas: [{name: 'კარიერა', value:5}, {name:'ფინანსები', value:5}, {name:'ჯანმრთელობა', value:5}, {name:'ოჯახი/მეგობრები', value:5}, {name:'პირადი ზრდა', value:5}, {name:'გართობა', value:5}, {name:'გარემო', value:5}, {name:'სულიერება', value:5}], insight: '' })),
+            'bucket-map': createExerciseModule('bucket-map', 'სურვილების რუკა', 'დააჯგუფე შენი სურვილები და მიზნები.', genericExerciseContent, () => ({ buckets: [{name: '', items:[]}], insight: '' })),
+            'future-letter': createExerciseModule('future-letter', 'წერილი მომავალს', 'მისწერე წერილი შენს მომავალ მეს.', genericTextareaContent('დაწერე წერილი...', 'წერილი'), () => ({ letterContent: '', sendDate: dayjs().add(1,'year').format('YYYY-MM-DD'), insight: '' })),
+            'johari-window': createExerciseModule('johari-window', 'ჯოჰარის ფანჯარა (2x2)', 'გააანალიზე შენი თავის ცნობილი და უცნობი ასპექტები.', genericExerciseContent, () => ({ insight: '' })),
+            'priority-pyramid': createExerciseModule('priority-pyramid', 'პრიორიტეტების პირამიდა', 'დაალაგე პრიორიტეტები იერარქიულად.', genericExerciseContent, () => ({ insight: '' })),
+            'yearly-retro': createExerciseModule('yearly-retro', 'წლის რეტროსპექტივა', 'გააანალიზე გასული წელი.', yearlyRetrospectiveContent, () => ({ achievements: '', challenges: '', lessons: '', goalsNextYear: '', insight:''})),
+            'gratitude-list': createExerciseModule('gratitude-list', 'მადლიერების სია', 'ჩამოთვალე, რისთვის ხარ მადლიერი.', genericTextareaContent('რისთვის ხარ მადლიერი დღეს?', 'მადლიერების სია'), () => ({ list: '', insight: '' })),
+            'pomodoro-planner': createExerciseModule('pomodoro-planner', 'პომოდოროს დამგეგმავი', 'დაგეგმე სამუშაო პომოდოროს ტექნიკით.', genericExerciseContent, () => ({ tasks: [], insight: '' })),
+            'decision-triptych': createExerciseModule('decision-triptych', 'გადაწყვეტილების ტრიპტიქი', 'გააანალიზე გადაწყვეტილება სამი პერსპექტივიდან.', genericExerciseContent, () => ({ insight: '' })),
+            'values-rank': createExerciseModule('values-rank', 'ფასეულობების რანჟირება', 'დაალაგე შენი ძირითადი ფასეულობები.', genericExerciseContent, () => ({ insight: '' })),
+            'strengths-cards': createExerciseModule('strengths-cards', 'ძლიერი მხარეების ბარათები', 'ამოიცანი და იმუშავე შენს ძლიერ მხარეებზე.', genericExerciseContent, () => ({ insight: '' })),
+            'personal-pattern-map': createExerciseModule('personal-pattern-map', 'პირადი პატერნების რუკა', 'ამოიცანი განმეორებადი ქცევები და ფიქრები.', genericExerciseContent, () => ({ insight: '' })),
+            'time-audit': createExerciseModule('time-audit', 'დროის აუდიტი', 'გააანალიზე, რაში გეხარჯება დრო.', genericExerciseContent, () => ({ insight: '' })),
+            'energy-graph': createExerciseModule('energy-graph', 'ენერგიის გრაფიკი', 'დააკვირდი შენი ენერგიის დონეს დღის განმავლობაში.', genericExerciseContent, () => ({ insight: '' })),
+            'role-balance-pie': createExerciseModule('role-balance-pie', 'როლების ბალანსის დიაგრამა', 'შეაფასე დრო და ენერგია სხვადასხვა ცხოვრებისეულ როლში.', genericExerciseContent, () => ({ insight: '' })),
+        };
+
+        function genericExerciseContent(uiContainer, data, saveDataCb, aiHintCb) {
+            uiContainer.innerHTML = `<p class="text-sm text-gray-500">ეს სავარჯიშო დამუშავების პროცესშია.</p>
+                                     <textarea class="w-full p-2 mt-2 bg-black/30 border-white/10 rounded-md h-24 generic-insight" placeholder="შენი დაკვირვებები...">${data.insight || ''}</textarea>`;
+            uiContainer.gatherExerciseData = () => {
+                data.insight = uiContainer.querySelector('.generic-insight').value;
+                data.title = data.title || `${uiContainer.closest('.glass-effect').querySelector('h3').textContent} - შედეგი`;
+                data.dateISO = data.dateISO || dayjs().toISOString();
+                return data;
+            };
+        }
+        function genericTextareaContent(placeholder, fieldName) {
+            return (uiContainer, data, saveDataCb, aiHintCb) => {
+                data[fieldName] = data[fieldName] || ''; data.insight = data.insight || '';
+                uiContainer.innerHTML = `
+                    <textarea class="w-full p-2 bg-black/30 border-white/10 rounded-md h-40 specific-field" placeholder="${placeholder}">${data[fieldName]}</textarea>
+                    <textarea class="w-full p-2 mt-2 bg-black/30 border-white/10 rounded-md h-24 generic-insight" placeholder="შენი დაკვირვებები...">${data.insight}</textarea>`;
+                uiContainer.gatherExerciseData = () => {
+                    data[fieldName] = uiContainer.querySelector('.specific-field').value;
+                    data.insight = uiContainer.querySelector('.generic-insight').value;
+                    data.title = data.title || `${uiContainer.closest('.glass-effect').querySelector('h3').textContent} - შედეგი`;
+                    data.dateISO = data.dateISO || dayjs().toISOString();
+                    return data;
+                };
+            }
+        }
+        
+        function swotMeContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.S = data.S || ''; data.W = data.W || ''; data.O = data.O || ''; data.T = data.T || ''; data.insight = data.insight || '';
+            uiContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">ძლიერი მხარეები (Strengths):</label><textarea class="swot-s w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.S}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">სუსტი მხარეები (Weaknesses):</label><textarea class="swot-w w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.W}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">შესაძლებლობები (Opportunities):</label><textarea class="swot-o w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.O}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">საფრთხეები (Threats):</label><textarea class="swot-t w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.T}</textarea></div>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-300 mb-1">შენი დაკვირვებები/შედეგი:</label><textarea class="swot-insight w-full p-2 bg-black/30 border-white/10 rounded-md h-20">${data.insight}</textarea></div>
+                <button class="ai-analyze-swot-btn w-full mt-3 p-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm">AI SWOT ანალიზი ✨</button>
+            `;
+             uiContainer.querySelector('.ai-analyze-swot-btn').addEventListener('click', async () => {
+                const currentData = uiContainer.gatherExerciseData();
+                const resultPane = uiContainer.parentElement.querySelector('.result-pane');
+                resultPane.classList.remove('hidden');
+                resultPane.innerHTML = `<p class="text-xs text-yellow-400 animate-pulse">AI აანალიზებს SWOT-ს...</p>`;
+                try {
+                    const prompt = `Analyze this SWOT. Strengths: "${currentData.S}". Weaknesses: "${currentData.W}". Opportunities: "${currentData.O}". Threats: "${currentData.T}". Provide insights, connections between quadrants, and potential strategies.`;
+                    const analysis = await callGeminiAPI_Text(`${GEMINI_MODEL_TEXT}:generateContent`, prompt, []);
+                    resultPane.innerHTML = `<p class="text-sm font-semibold mb-1">AI SWOT ანალიზი:</p><div class="text-xs prose prose-sm prose-invert">${analysis ? analysis.replace(/\n/g, '<br>') : "ვერ მოხერხდა ანალიზის გენერირება."}</div>`;
+                } catch (error) {
+                    resultPane.innerHTML = `<p class="text-xs text-red-400">AI SWOT ანალიზის შეცდომა: ${error.message}</p>`;
+                }
+            });
+            uiContainer.gatherExerciseData = () => {
+                data.S = uiContainer.querySelector('.swot-s').value; data.W = uiContainer.querySelector('.swot-w').value;
+                data.O = uiContainer.querySelector('.swot-o').value; data.T = uiContainer.querySelector('.swot-t').value;
+                data.insight = uiContainer.querySelector('.swot-insight').value;
+                data.title = `SWOT-me - ${dayjs().format('YYYY-MM-DD')}`; data.dateISO = dayjs().toISOString();
+                return data;
+            };
+        }
+
+        function fiveWhysContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.problem = data.problem || ''; data.whys = data.whys || ['', '', '', '', '']; data.insight = data.insight || '';
+            let whysHTML = data.whys.map((why, index) => `
+                <div><label class="block text-sm font-medium text-gray-300 mb-1">რატომ #${index + 1}?</label><input type="text" value="${why}" class="w-full p-2 bg-black/30 border-white/10 rounded-md five-whys-input" data-index="${index}"></div>`).join('');
+            uiContainer.innerHTML = `
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">პრობლემა:</label><input type="text" value="${data.problem}" class="w-full p-2 bg-black/30 border-white/10 rounded-md five-whys-problem"></div>
+                    ${whysHTML}
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">შენი დაკვირვებები/შედეგი:</label><textarea class="w-full p-2 bg-black/30 border-white/10 rounded-md h-24 five-whys-insight">${data.insight}</textarea></div>
+                    <button class="ai-analyze-whys-btn w-full p-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-sm">AI ანალიზი ✨</button>
+                </div>`;
+            uiContainer.querySelector('.ai-analyze-whys-btn').addEventListener('click', async () => {
+                const currentData = uiContainer.gatherExerciseData(); 
+                const resultPane = uiContainer.parentElement.querySelector('.result-pane');
+                resultPane.classList.remove('hidden');
+                resultPane.innerHTML = `<p class="text-xs text-yellow-400 animate-pulse">AI აანალიზებს "რატომ"-ებს...</p>`;
+                try {
+                    const prompt = `Analyze this "5 Whys" exercise. Problem: "${currentData.problem}". Why 1: "${currentData.whys[0]}", Why 2: "${currentData.whys[1]}", Why 3: "${currentData.whys[2]}", Why 4: "${currentData.whys[3]}", Why 5: "${currentData.whys[4]}". Based on this chain, suggest a potential root cause or ask clarifying questions if the chain is weak or unclear. Provide feedback on the depth of the analysis.`;
+                    const analysis = await callGeminiAPI_Text(`${GEMINI_MODEL_TEXT}:generateContent`, prompt, []);
+                    resultPane.innerHTML = `<p class="text-sm font-semibold mb-1">AI ანალიზი:</p><div class="text-xs prose prose-sm prose-invert">${analysis ? analysis.replace(/\n/g, '<br>') : "ვერ მოხერხდა ანალიზის გენერირება."}</div>`;
+                } catch (error) { resultPane.innerHTML = `<p class="text-xs text-red-400">AI ანალიზის შეცდომა: ${error.message}</p>`; }
+            });
+            uiContainer.gatherExerciseData = () => {
+                data.problem = uiContainer.querySelector('.five-whys-problem').value;
+                uiContainer.querySelectorAll('.five-whys-input').forEach(input => { data.whys[parseInt(input.dataset.index)] = input.value; });
+                data.insight = uiContainer.querySelector('.five-whys-insight').value;
+                data.title = data.title || `5 რატომ? - ${data.problem.substring(0,20) || 'უსათაურო'}`; data.dateISO = data.dateISO || dayjs().toISOString();
+                return data;
+            };
+        }
+        
+        function habitTrackerContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.habits = data.habits && data.habits.length > 0 ? data.habits : [{ name: 'დილის ვარჯიში', days: Array(7).fill(false) }];
+            data.insight = data.insight || '';
+            const dayNames = ['ორ', 'სმ', 'ოთ', 'ხთ', 'პრ', 'შბ', 'კვ']; // Shorter day names
+
+            function renderHabits() {
+                let habitsHTML = data.habits.map((habit, habitIndex) => `
+                    <div class="habit-row mb-3 p-3 bg-black/20 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <input type="text" value="${habit.name}" class="habit-name-input text-sm bg-transparent border-b border-white/20 focus:border-brand-color outline-none py-1 flex-grow mr-2" data-habit-index="${habitIndex}" placeholder="ჩვევის სახელი">
+                            <button class="remove-habit-btn text-red-500 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-500/20" data-habit-index="${habitIndex}">X</button>
+                        </div>
+                        <div class="flex space-x-1 justify-around">
+                            ${habit.days.map((done, dayIndex) => `
+                                <div class="flex flex-col items-center">
+                                    <span class="text-xs text-gray-400">${dayNames[dayIndex]}</span>
+                                    <input type="checkbox" ${done ? 'checked' : ''} class="habit-day-checkbox accent-[var(--brand-color)] w-5 h-5 mt-1 cursor-pointer" data-habit-index="${habitIndex}" data-day-index="${dayIndex}">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                uiContainer.innerHTML = `
+                    <div id="habits-list">${habitsHTML}</div>
+                    <button id="add-habit-btn" class="mt-2 p-2 bg-green-700 hover:bg-green-600 text-white rounded-md text-sm">+ ახალი ჩვევა</button>
+                    <div class="mt-4"><label class="block text-sm font-medium text-gray-300 mb-1">შენიშვნები:</label><textarea class="habit-tracker-insight w-full p-2 bg-black/30 border-white/10 rounded-md h-20">${data.insight}</textarea></div>
+                `;
+
+                uiContainer.querySelectorAll('.habit-name-input').forEach(input => {
+                    input.addEventListener('change', (e) => { data.habits[parseInt(e.target.dataset.habitIndex)].name = e.target.value; });
+                });
+                uiContainer.querySelectorAll('.habit-day-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => { data.habits[parseInt(e.target.dataset.habitIndex)].days[parseInt(e.target.dataset.dayIndex)] = e.target.checked; });
+                });
+                 uiContainer.querySelectorAll('.remove-habit-btn').forEach(button => {
+                    button.addEventListener('click', (e) => { data.habits.splice(parseInt(e.target.dataset.habitIndex), 1); renderHabits(); });
+                });
+                document.getElementById('add-habit-btn').addEventListener('click', () => { data.habits.push({ name: '', days: Array(7).fill(false) }); renderHabits(); });
+            }
+            renderHabits();
+            uiContainer.gatherExerciseData = () => {
+                data.insight = uiContainer.querySelector('.habit-tracker-insight').value;
+                data.title = `ჩვევების ტრეკერი - ${dayjs().format('YYYY-MM-DD')}`; data.dateISO = dayjs().toISOString();
+                data.score = { habitsTracked: data.habits.length, habits: data.habits }; 
+                return data;
+            };
+        }
+
+        function eisenhowerMatrixContent(uiContainer, data, saveDataCb, aiHintCb) {
+            const quadrantsData = {
+                urgentImportant: data.urgentImportant || [], importantNotUrgent: data.importantNotUrgent || [],
+                urgentNotImportant: data.urgentNotImportant || [], notUrgentNotImportant: data.notUrgentNotImportant || []
+            };
+            const quadrantLabels = {
+                urgentImportant: 'გადაუდებელი და მნიშვნელოვანი', importantNotUrgent: 'მნიშვნელოვანი, არა-გადაუდებელი',
+                urgentNotImportant: 'გადაუდებელი, არა-მნიშვნელოვანი', notUrgentNotImportant: 'არა-გადაუდებელი, არა-მნიშვნელოვანი'
+            };
+            data.insight = data.insight || '';
+
+            function renderMatrix() {
+                let matrixHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+                Object.keys(quadrantsData).forEach(key => {
+                    matrixHTML += `
+                        <div class="quadrant p-3 bg-black/20 rounded-lg min-h-[150px]" data-quadrant-key="${key}">
+                            <h4 class="font-semibold text-sm mb-2 ${key === 'urgentImportant' || key === 'importantNotUrgent' ? 'accent-text' : 'brand-text'}">${quadrantLabels[key]}</h4>
+                            <ul class="list-disc list-inside space-y-1 text-xs quadrant-list min-h-[50px]">
+                                ${quadrantsData[key].map((item, index) => `
+                                    <li class="flex justify-between items-center group p-1 hover:bg-white/5 rounded">
+                                        <span class="flex-grow">${item}</span>
+                                        <button class="remove-task-btn text-red-500 opacity-0 group-hover:opacity-100 ml-2 px-1" data-quadrant-key="${key}" data-task-index="${index}">X</button>
+                                    </li>`).join('')}
+                            </ul>
+                            <input type="text" class="new-task-input w-full mt-2 p-1.5 text-xs bg-black/30 border-white/10 rounded-md" placeholder="ახალი ამოცანა...">
+                        </div>`;
+                });
+                matrixHTML += '</div>';
+                uiContainer.innerHTML = `
+                    ${matrixHTML}
+                    <div class="mt-4"><label class="block text-sm font-medium text-gray-300 mb-1">შენიშვნები:</label><textarea class="eisenhower-insight w-full p-2 bg-black/30 border-white/10 rounded-md h-20">${data.insight}</textarea></div>
+                `;
+
+                uiContainer.querySelectorAll('.new-task-input').forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter' && e.target.value.trim() !== '') {
+                            const quadrantKey = e.target.closest('.quadrant').dataset.quadrantKey;
+                            quadrantsData[quadrantKey].push(e.target.value.trim());
+                            e.target.value = ''; renderMatrix(); 
+                        }
+                    });
+                });
+                uiContainer.querySelectorAll('.remove-task-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const quadrantKey = e.target.dataset.quadrantKey; const taskIndex = parseInt(e.target.dataset.taskIndex);
+                        quadrantsData[quadrantKey].splice(taskIndex, 1); renderMatrix(); 
+                    });
+                });
+            }
+            renderMatrix();
+            uiContainer.gatherExerciseData = () => {
+                data.urgentImportant = quadrantsData.urgentImportant; data.importantNotUrgent = quadrantsData.importantNotUrgent;
+                data.urgentNotImportant = quadrantsData.urgentNotImportant; data.notUrgentNotImportant = quadrantsData.notUrgentNotImportant;
+                data.insight = uiContainer.querySelector('.eisenhower-insight').value;
+                data.title = `ეიზენჰაუერის მატრიცა - ${dayjs().format('YYYY-MM-DD')}`; data.dateISO = dayjs().toISOString();
+                return data;
+            };
+        }
+        
+        function yearlyRetrospectiveContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.achievements = data.achievements || ''; data.challenges = data.challenges || '';
+            data.lessons = data.lessons || ''; data.goalsNextYear = data.goalsNextYear || '';
+            data.insight = data.insight || '';
+
+            uiContainer.innerHTML = `
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">წლის მთავარი მიღწევები:</label><textarea class="yearly-achievements w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.achievements}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">მთავარი გამოწვევები:</label><textarea class="yearly-challenges w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.challenges}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">მთავარი გაკვეთილები:</label><textarea class="yearly-lessons w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.lessons}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">მიზნები მომავალი წლისთვის:</label><textarea class="yearly-goalsNextYear w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.goalsNextYear}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">ზოგადი შენიშვნები/რეფლექსია:</label><textarea class="yearly-insight w-full p-2 bg-black/30 border-white/10 rounded-md h-20">${data.insight}</textarea></div>
+                </div>`;
+            uiContainer.gatherExerciseData = () => {
+                data.achievements = uiContainer.querySelector('.yearly-achievements').value;
+                data.challenges = uiContainer.querySelector('.yearly-challenges').value;
+                data.lessons = uiContainer.querySelector('.yearly-lessons').value;
+                data.goalsNextYear = uiContainer.querySelector('.yearly-goalsNextYear').value;
+                data.insight = uiContainer.querySelector('.yearly-insight').value;
+                data.title = `წლის რეტროსპექტივა - ${dayjs().format('YYYY')}`; data.dateISO = dayjs().endOf('year').toISOString();
+                return data;
+            };
+        }
+
+
+        function dailyLogContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.rating = data.rating || 3; data.notes = data.notes || ''; data.gratitude = data.gratitude || ''; data.dateISO = data.dateISO || dayjs().toISOString();
+            uiContainer.innerHTML = `
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">დღის შეფასება (1-5):</label><input type="range" min="1" max="5" value="${data.rating}" class="w-full daily-log-rating accent-[var(--brand-color)]"></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">შენიშვნები / ფიქრები:</label><textarea class="daily-log-notes w-full p-2 bg-black/30 border-white/10 rounded-md h-24">${data.notes}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">რისთვის ხარ მადლიერი დღეს?</label><textarea class="daily-log-gratitude w-full p-2 bg-black/30 border-white/10 rounded-md h-16">${data.gratitude}</textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-300 mb-1">თარიღი:</label><input type="date" value="${dayjs(data.dateISO).format('YYYY-MM-DD')}" class="daily-log-date p-2 bg-black/30 border-white/10 rounded-md w-full"></div>
+                    <button class="ai-summary-btn w-full p-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-sm">AI დღის შეჯამება ✨</button>
+                </div>`;
+            uiContainer.querySelector('.ai-summary-btn').addEventListener('click', async () => {
+                const currentData = uiContainer.gatherExerciseData();
+                const resultPane = uiContainer.parentElement.querySelector('.result-pane');
+                resultPane.classList.remove('hidden');
+                resultPane.innerHTML = `<p class="text-xs text-yellow-400 animate-pulse">AI ფიქრობს შეჯამებაზე...</p>`;
+                try {
+                    const prompt = `Summarize this daily log entry empathetically and offer a brief reflection. Rating (1-5): ${currentData.rating}. Notes: ${currentData.notes}. Gratitude: ${currentData.gratitude}.`;
+                    const summary = await callGeminiAPI_Text(`${GEMINI_MODEL_TEXT}:generateContent`, prompt, []);
+                    resultPane.innerHTML = `<p class="text-sm font-semibold mb-1">AI შეჯამება:</p><div class="text-xs prose prose-sm prose-invert">${summary ? summary.replace(/\n/g, '<br>') : "ვერ მოხერხდა შეჯამების გენერირება."}</div>`;
+                } catch (error) {
+                    resultPane.innerHTML = `<p class="text-xs text-red-400">AI შეჯამების შეცდომა: ${error.message}</p>`;
+                }
+            });
+            uiContainer.gatherExerciseData = () => {
+                data.rating = parseInt(uiContainer.querySelector('.daily-log-rating').value);
+                data.notes = uiContainer.querySelector('.daily-log-notes').value;
+                data.gratitude = uiContainer.querySelector('.daily-log-gratitude').value;
+                data.dateISO = dayjs(uiContainer.querySelector('.daily-log-date').value).toISOString();
+                data.title = `დღიური: ${dayjs(data.dateISO).format('D MMM')}, შეფასება: ${data.rating}/5`;
+                data.insight = `შენიშვნები: ${data.notes}\nმადლიერება: ${data.gratitude}`;
+                return data;
+            };
+        }
+
+        function smartDecomposeContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.goalTitle=data.goalTitle||'';data.specific=data.specific||'';data.measurable=data.measurable||'';data.achievable=data.achievable||'';data.relevant=data.relevant||'';data.timeBound=data.timeBound||dayjs().add(1,'month').format('YYYY-MM-DD');data.insight=data.insight||'';
+            uiContainer.innerHTML = `
+                <div class="space-y-3">
+                    <div><label class="text-sm">მიზნის სათაური:</label><input type="text" value="${data.goalTitle}" class="smart-goalTitle w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md"></div>
+                    <div><label class="text-sm">Specific:</label><textarea class="smart-specific w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-16">${data.specific}</textarea></div>
+                    <div><label class="text-sm">Measurable:</label><textarea class="smart-measurable w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-16">${data.measurable}</textarea></div>
+                    <div><label class="text-sm">Achievable:</label><textarea class="smart-achievable w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-16">${data.achievable}</textarea></div>
+                    <div><label class="text-sm">Relevant:</label><textarea class="smart-relevant w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-16">${data.relevant}</textarea></div>
+                    <div><label class="text-sm">Time-bound:</label><input type="date" value="${dayjs(data.timeBound).format('YYYY-MM-DD')}" class="smart-timeBound w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md"></div>
+                    <div><label class="text-sm">შენიშვნები:</label><textarea class="smart-insight w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-16">${data.insight}</textarea></div>
+                    <button class="ai-refine-goal-btn w-full p-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-sm">AI მიზნის დახვეწა ✨</button>
+                </div>`;
+            uiContainer.querySelector('.ai-refine-goal-btn').addEventListener('click', async () => {
+                const currentData = uiContainer.gatherExerciseData();
+                const resultPane = uiContainer.parentElement.querySelector('.result-pane');
+                resultPane.classList.remove('hidden');
+                resultPane.innerHTML = `<p class="text-xs text-yellow-400 animate-pulse">AI ფიქრობს მიზნის დახვეწაზე...</p>`;
+                try {
+                    const prompt = `Refine this SMART goal. Goal: "${currentData.goalTitle}". Specific: "${currentData.specific}". Measurable: "${currentData.measurable}". Achievable: "${currentData.achievable}". Relevant: "${currentData.relevant}". Time-bound: "${currentData.timeBound}". Provide actionable suggestions for each component if they can be improved, or affirm if they are strong.`;
+                    const refinement = await callGeminiAPI_Text(`${GEMINI_MODEL_TEXT}:generateContent`, prompt, []);
+                    resultPane.innerHTML = `<p class="text-sm font-semibold mb-1">AI რჩევები მიზნისთვის:</p><div class="text-xs prose prose-sm prose-invert">${refinement ? refinement.replace(/\n/g, '<br>') : "ვერ მოხერხდა რჩევების გენერირება."}</div>`;
+                } catch (error) {
+                    resultPane.innerHTML = `<p class="text-xs text-red-400">AI მიზნის დახვეწის შეცდომა: ${error.message}</p>`;
+                }
+            });
+             uiContainer.gatherExerciseData = () => {
+                data.goalTitle = uiContainer.querySelector('.smart-goalTitle').value; data.specific = uiContainer.querySelector('.smart-specific').value;
+                data.measurable = uiContainer.querySelector('.smart-measurable').value; data.achievable = uiContainer.querySelector('.smart-achievable').value;
+                data.relevant = uiContainer.querySelector('.smart-relevant').value; data.timeBound = uiContainer.querySelector('.smart-timeBound').value;
+                data.insight = uiContainer.querySelector('.smart-insight').value; data.dateISO = dayjs(data.timeBound).toISOString(); 
+                data.title = `SMART მიზანი: ${data.goalTitle || 'უსათაურო'}`;
+                data.score = { completeness: Object.values(data).filter(v => typeof v === 'string' && v.trim() !== '').length / 6 };
+                return data;
+            };
+        }
+        
+        function lifeWheelContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.areas = data.areas || [ {name:'კარიერა',value:5},{name:'ფინანსები',value:5},{name:'ჯანმრთელობა',value:5},{name:'ოჯახი/მეგობრები',value:5},{name:'პირადი ზრდა',value:5},{name:'გართობა/დასვენება',value:5},{name:'ფიზიკური გარემო',value:5},{name:'სულიერება/წვლილი',value:5}];
+            data.insight = data.insight || '';
+            let areasHTML = data.areas.map((area, index) => `
+                <div class="mb-2">
+                    <label class="block text-sm text-gray-300">${area.name}: <span class="font-bold life-wheel-value-display-${index}">${area.value}</span></label>
+                    <input type="range" min="1" max="10" value="${area.value}" data-index="${index}" class="w-full life-wheel-slider accent-[var(--brand-color)]">
+                </div>`).join('');
+            uiContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">${areasHTML}</div>
+                <div class="mt-4"><label class="block text-sm text-gray-300">შენიშვნები:</label><textarea class="life-wheel-insight w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-20">${data.insight}</textarea></div>
+                <div class="mt-4 h-64 w-full"><canvas id="lifeWheelChartCanvas"></canvas></div>`;
+            const chartCanvas = uiContainer.querySelector('#lifeWheelChartCanvas');
+            let chartInstance = null;
+            function drawChart() {
+                if (chartInstance) chartInstance.destroy(); if (!chartCanvas) return; 
+                const chartCtx = chartCanvas.getContext('2d'); if (!chartCtx) return; 
+                const labels = data.areas.map(a => a.name); const values = data.areas.map(a => a.value);
+                chartInstance = new Chart(chartCtx, { 
+                    type: 'radar', data: { labels: labels, datasets: [{ label: 'ცხოვრების ბორბალი', data: values, fill: true, backgroundColor: 'rgba(0,246,255,0.2)', borderColor: 'rgb(0,246,255)', pointBackgroundColor: 'rgb(0,246,255)', pointBorderColor: '#fff', pointHoverBackgroundColor: '#fff', pointHoverBorderColor: 'rgb(0,246,255)' }] },
+                    options: { elements: { line: { borderWidth: 2 } }, scales: { r: { angleLines: { display: false }, suggestedMin: 0, suggestedMax: 10, pointLabels: { font: { size: 10 }, color: 'var(--text-color)' }, ticks: { stepSize: 1, backdropColor: 'transparent', color: 'var(--text-color)'} } }, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+            // Chart.js is already included via <script> tag in <head>
+            drawChart(); 
+
+            uiContainer.querySelectorAll('.life-wheel-slider').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const index = parseInt(e.target.dataset.index); const value = parseInt(e.target.value);
+                    data.areas[index].value = value; uiContainer.querySelector(`.life-wheel-value-display-${index}`).textContent = value;
+                    if(window.Chart) drawChart(); 
+                });
+            });
+            uiContainer.gatherExerciseData = () => {
+                data.insight = uiContainer.querySelector('.life-wheel-insight').value;
+                data.title = `ცხოვრების ბორბალი - ${dayjs().format('YYYY-MM-DD')}`; data.dateISO = dayjs().toISOString();
+                data.score = data.areas.reduce((acc, area) => { acc[area.name] = area.value; return acc; }, {});
+                return data;
+            };
+        }
+        
+        function mindfulBreathContent(uiContainer, data, saveDataCb, aiHintCb) {
+            data.duration = data.duration || 1; data.log = data.log || []; data.insight = data.insight || '';
+            let timerId = null; let timeLeft = 0;
+            uiContainer.innerHTML = `
+                <div class="text-center space-y-4">
+                    <p class="text-lg">ხანგრძლივობა: <span id="breath-duration-display">${data.duration}</span> წთ</p>
+                    <input type="range" min="1" max="15" value="${data.duration}" id="breath-duration-slider" class="w-full max-w-xs accent-[var(--brand-color)]">
+                    <button id="start-breath-btn" class="p-3 bg-[var(--brand-color)] text-black rounded-full text-lg font-semibold w-32 h-32 flex items-center justify-center mx-auto">დაწყება</button>
+                    <p id="breath-timer-display" class="text-4xl font-mono brand-text"></p>
+                    <p id="breath-message" class="text-sm text-gray-400">ისუნთქე ღრმად...</p>
+                </div>
+                <div class="mt-4"><label class="block text-sm text-gray-300">შენიშვნები:</label><textarea class="mindful-breath-insight w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-20">${data.insight}</textarea></div>`;
+            const durationSlider = uiContainer.querySelector('#breath-duration-slider');
+            const durationDisplay = uiContainer.querySelector('#breath-duration-display');
+            const startBtn = uiContainer.querySelector('#start-breath-btn');
+            const timerDisplay = uiContainer.querySelector('#breath-timer-display');
+            const messageDisplay = uiContainer.querySelector('#breath-message');
+            durationSlider.addEventListener('input', (e) => { data.duration = parseInt(e.target.value); durationDisplay.textContent = data.duration; });
+            function updateTimerDisplay() { const minutes = Math.floor(timeLeft/60); const seconds = timeLeft%60; timerDisplay.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`; }
+            startBtn.addEventListener('click', () => {
+                if (timerId) { clearInterval(timerId); timerId = null; startBtn.textContent = 'დაწყება'; messageDisplay.textContent = 'სესია შეჩერებულია.'; timerDisplay.textContent = ''; } 
+                else { 
+                    timeLeft = data.duration * 60; updateTimerDisplay(); startBtn.textContent = 'გაჩერება'; messageDisplay.textContent = 'ისუნთქე... შიგნით... გარეთ...';
+                    timerId = setInterval(() => {
+                        timeLeft--; updateTimerDisplay();
+                        if (timeLeft <= 0) {
+                            clearInterval(timerId); timerId = null; startBtn.textContent = 'თავიდან'; messageDisplay.textContent = 'სესია დასრულდა!';
+                            window.toast('სუნთქვითი ვარჯიში დასრულდა!', 'success'); data.log.push({ date: dayjs().toISOString(), duration: data.duration });
+                        }
+                    }, 1000);
+                }
+            });
+             uiContainer.gatherExerciseData = () => {
+                data.insight = uiContainer.querySelector('.mindful-breath-insight').value;
+                data.title = `გაცნობიერებული სუნთქვა: ${data.duration} წთ - ${dayjs().format('HH:mm')}`; data.dateISO = dayjs().toISOString();
+                data.score = { sessions: data.log.length, lastDuration: data.duration }; 
+                return data;
+            };
+        }
+        
+        function renderPastImporterContent(uiContainer, data, saveDataCb, aiHintCb) { 
+            data.importText = data.importText || '';
+            uiContainer.innerHTML = `
+                <div class="space-y-4">
+                    <div><label for="csv-upload" class="block text-sm font-medium text-gray-300 mb-1">CSV (date,title,type,category,details):</label><input type="file" id="csv-upload" accept=".csv" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[var(--brand-color)] file:text-black hover:file:bg-[var(--brand-color)]/80"></div>
+                    <div><label for="text-import" class="block text-sm font-medium text-gray-300 mb-1">ტექსტი (YYYY-MM-DD: სათაური; კატეგორია; ტიპი; დეტალები):</label><textarea id="text-import" rows="5" class="w-full p-2 bg-black/30 border-white/10 rounded-md">${data.importText}</textarea></div>
+                    <button id="importer-process-btn" class="w-full p-2 bg-[var(--accent-color)] hover:bg-[var(--accent-color)]/80 text-white rounded-lg">AI დამუშავება ✨</button>
+                </div>
+                <div id="importer-preview" class="mt-4 text-xs max-h-60 overflow-y-auto"></div>`;
+            const processBtn = uiContainer.querySelector('#importer-process-btn');
+            const csvUpload = uiContainer.querySelector('#csv-upload');
+            const textImportEl = uiContainer.querySelector('#text-import');
+            const previewDiv = uiContainer.querySelector('#importer-preview');
+
+            async function processWithAI(inputText) {
+                previewDiv.innerHTML = `<p class="text-xs text-yellow-400 animate-pulse">AI ამუშავებს ტექსტს...</p>`;
+                const lifeItemSchema = {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            "dateISO": { "type": "STRING", "description": "Date in YAML-MM-DD format, then convert to ISOString." },
+                            "title": { "type": "STRING" },
+                            "type": { "type": "STRING", "enum": ITEM_TYPES.filter(t => t !== 'exercise') },
+                            "category": { "type": "STRING", "enum": ITEM_CATEGORIES },
+                            "details": { "type": "STRING", "description": "Any additional details or notes." }
+                        },
+                        required: ["dateISO", "title", "type", "category"]
+                    }
+                };
+                try {
+                    const parsedData = await callGeminiAPI_JSON(
+                        `${GEMINI_MODEL_JSON}:generateContent`,
+                        `Parse the following text into an array of life events. Each event should have a dateISO, title, type (event, goal, or note), category (${ITEM_CATEGORIES.join('/')}), and details. Ensure dateISO is a valid ISOString. Text: \n${inputText}`,
+                        [], lifeItemSchema
+                    );
+                    if (parsedData && Array.isArray(parsedData)) {
+                        data.parsedItems = parsedData.map(item => ({
+                            ...item,
+                            dateISO: dayjs(item.dateISO).isValid() ? dayjs(item.dateISO).toISOString() : dayjs().toISOString(), 
+                            payload: { details: item.details || '' } 
+                        }));
+                        renderPreview();
+                    } else {
+                        previewDiv.innerHTML = '<p class="text-red-400">AI-მ ვერ შეძლო მონაცემების კორექტულად დამუშავება.</p>';
+                    }
+                } catch (error) {
+                    console.error("AI Importer Error:", error);
+                    previewDiv.innerHTML = `<p class="text-red-400">AI დამუშავების შეცდომა: ${error.message}</p>`;
+                    window.toast('AI იმპორტის შეცდომა', 'error');
+                }
+            }
+            
+            processBtn.addEventListener('click', async () => {
+                const file = csvUpload.files[0];
+                const textContent = textImportEl.value;
+                data.parsedItems = []; 
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => processWithAI(e.target.result);
+                    reader.readAsText(file);
+                } else if (textContent.trim()) {
+                    processWithAI(textContent.trim());
+                } else {
+                    previewDiv.innerHTML = '<p class="text-gray-400">ატვირთეთ ფაილი ან შეიყვანეთ ტექსტი.</p>';
+                }
+            });
+            function renderPreview() { 
+                if (!data.parsedItems || data.parsedItems.length === 0) {
+                    previewDiv.innerHTML = '<p class="text-yellow-400">მონაცემები ვერ მოიძებნა ან არასწორი ფორმატისაა.</p>'; return;
+                }
+                previewDiv.innerHTML = `<p class="font-semibold mb-2">${data.parsedItems.length} ელემენტი მზადაა იმპორტისთვის:</p>
+                    <ul class="space-y-1 list-disc list-inside">${data.parsedItems.map(item => `<li>${dayjs(item.dateISO).format('YYYY-MM-DD')}: ${item.title} (${item.type}, ${item.category})</li>`).join('')}</ul>`;
+            }
+            uiContainer.gatherExerciseData = () => {
+                data.insight = `${data.parsedItems?.length || 0} ელემენტი დამუშავდა AI-ს მიერ ${dayjs().format('YYYY-MM-DD HH:mm')}`;
+                data.title = `ისტორიის იმპორტი (AI) - ${dayjs().format('YYYY-MM-DD')}`; data.dateISO = dayjs().toISOString();
+                data.score = { itemsParsed: data.parsedItems?.length || 0 };
+                data.itemsToImport = data.parsedItems || []; 
+                return data;
+            };
+        }
+
+        // --- Page Render Functions ---
+        function findExerciseLifeItem(slug) {
+            const relevantItems = lifeItems.filter(item => item.type === 'exercise' && item.payload && item.payload.slug === slug).sort((a, b) => dayjs(b.updatedAt).valueOf() - dayjs(a.updatedAt).valueOf()); 
+            return relevantItems.length > 0 ? relevantItems[0] : null;
+        }
+        window.renderPastPage = function(outlet) {
+            outlet.innerHTML = `<div class="space-y-8"><h2 class="text-2xl font-semibold accent-text">წარსული</h2><div id="past-exercises-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>`;
+            const c = document.getElementById('past-exercises-container');
+            exercises['timeline-import']?.mount(c, findExerciseLifeItem('timeline-import')); exercises['swot-me']?.mount(c, findExerciseLifeItem('swot-me'));
+            exercises['5-whys']?.mount(c, findExerciseLifeItem('5-whys')); exercises['yearly-retro']?.mount(c, findExerciseLifeItem('yearly-retro'));
+        }
+        window.renderPresentPage = function(outlet) {
+            outlet.innerHTML = `<div class="space-y-8"><div class="flex justify-between items-center"><h2 class="text-2xl font-semibold accent-text">აწმყო</h2><button id="quick-add-today" class="p-2 bg-[var(--brand-color)] text-black rounded-lg text-sm font-semibold">სწრაფი დამატება "დღეს"</button></div><div id="present-exercises-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>`;
+            const c = document.getElementById('present-exercises-container');
+            exercises['daily-log']?.mount(c, findExerciseLifeItem('daily-log')); exercises['habit-tracker']?.mount(c, findExerciseLifeItem('habit-tracker'));
+            exercises['eisenhower-matrix']?.mount(c, findExerciseLifeItem('eisenhower-matrix')); exercises['mindful-breath']?.mount(c, findExerciseLifeItem('mindful-breath'));
+            exercises['pomodoro-planner']?.mount(c, findExerciseLifeItem('pomodoro-planner'));
+            document.getElementById('quick-add-today').addEventListener('click', () => openLifeItemEditModal(null, { dateISO: dayjs().toISOString() }));
+        }
+        window.renderFuturePage = function(outlet) {
+            outlet.innerHTML = `<div class="space-y-8"><h2 class="text-2xl font-semibold accent-text">მომავალი</h2><div id="future-exercises-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>`;
+            const c = document.getElementById('future-exercises-container');
+            exercises['smart-decompose']?.mount(c, findExerciseLifeItem('smart-decompose')); exercises['life-wheel']?.mount(c, findExerciseLifeItem('life-wheel'));
+            exercises['bucket-map']?.mount(c, findExerciseLifeItem('bucket-map')); exercises['future-letter']?.mount(c, findExerciseLifeItem('future-letter'));
+        }
+        
+        // --- Gemini API Call Wrappers ---
+        async function callGeminiAPI_Text(modelAndMethod, prompt, geminiChatHistory) {
+            if (API_KEY === "") { 
+                const errorMsg = "API გასაღები არ არის მითითებული. გთხოვთ, შეამოწმოთ API_KEY ცვლადი კოდში.";
+                console.error(errorMsg);
+                window.toast(errorMsg, 'error', 7000);
+                throw new Error(errorMsg);
+            }
+            const apiUrl = `${GEMINI_API_BASE_URL}${modelAndMethod}?key=${API_KEY}`;
+            console.log("Calling Gemini API (Text):", apiUrl, "Prompt (first 100 chars):", prompt.substring(0,100) + "..."); 
+            const payload = {
+                contents: [...geminiChatHistory, { role: "user", parts: [{ text: prompt }] }]
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    let errorBodyContent = `Raw Status: ${response.status} ${response.statusText}.`;
+                    let responseBodyForError = "(empty body)";
+                    try {
+                        const text = await response.text(); 
+                        responseBodyForError = text || "(empty body)";
+                        console.log("Gemini API Error Full Response Text:", responseBodyForError); 
+                        if (text && response.status === 401) { 
+                             errorBodyContent = `Status: ${response.status} ${response.statusText}. API Key / Authorization problem. The provided API Key may be invalid, expired, or lack permissions for the model '${modelAndMethod}'. Details: ${responseBodyForError}`;
+                             window.toast("API ავტორიზაციის შეცდომა (401). შეამოწმეთ API გასაღები.", 'error', 8000);
+                        } else if (text) {
+                            try {
+                                const errorJson = JSON.parse(text);
+                                errorBodyContent = `Status: ${response.status} ${response.statusText} - JSON Body: ${JSON.stringify(errorJson)}`;
+                            } catch (eJson) {
+                                 errorBodyContent += ` Raw Body: ${responseBodyForError}`;
+                                console.warn("Error response body was not valid JSON, using raw text. Details:", eJson.message);
+                            }
+                        } else {
+                             errorBodyContent += ` Raw Body: (empty body)`;
+                        }
+                    } catch (eText) {
+                        errorBodyContent += " Failed to read error response body as text.";
+                        console.error("Sub-error reading response body:", eText);
+                    }
+                    console.error("Gemini API Error Detail:", errorBodyContent);
+                    throw new Error(`Gemini API Error: ${errorBodyContent}`);
+                }
+                const result = await response.json();
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts[0]) {
+                    return result.candidates[0].content.parts[0].text;
+                }
+                console.warn("Gemini API Text: Unexpected response structure", result);
+                return null; 
+            } catch (error) {
+                console.error("Gemini API Text Call Error (catch block):", error);
+                throw error; 
+            }
+        }
+
+        async function callGeminiAPI_JSON(modelAndMethod, prompt, geminiChatHistory, jsonSchema) {
+             if (API_KEY === "") {
+                const errorMsg = "API გასაღები არ არის მითითებული JSON მოთხოვნისთვის. გთხოვთ, შეამოწმოთ API_KEY ცვლადი.";
+                console.error(errorMsg);
+                window.toast(errorMsg, 'error', 7000);
+                throw new Error(errorMsg);
+            }
+            const apiUrl = `${GEMINI_API_BASE_URL}${modelAndMethod}?key=${API_KEY}`;
+            console.log("Calling Gemini API (JSON):", apiUrl, "Prompt (first 100 chars):", prompt.substring(0,100) + "..."); 
+            const payload = {
+                contents: [...geminiChatHistory, { role: "user", parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: jsonSchema
+                }
+            };
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                 if (!response.ok) {
+                    let errorBodyContent = `Raw Status: ${response.status} ${response.statusText}.`;
+                    let responseBodyForError = "(empty body)";
+                    try {
+                        const text = await response.text();
+                        responseBodyForError = text || "(empty body)";
+                        console.log("Gemini API JSON Error Full Response Text:", responseBodyForError); 
+                        if(text && response.status === 401){
+                             errorBodyContent = `Status: ${response.status} ${response.statusText}. API Key problem. The provided API Key may be invalid, expired, or lack permissions for this model. Details: ${responseBodyForError}`;
+                             window.toast("API ავტორიზაციის შეცდომა (401). შეამოწმეთ API გასაღები.", 'error', 8000);
+                        } else if (text) {
+                            try {
+                                const errorJson = JSON.parse(text);
+                                errorBodyContent = `Status: ${response.status} ${response.statusText} - JSON Body: ${JSON.stringify(errorJson)}`;
+                            } catch (eJson) {
+                                 errorBodyContent += ` Raw Body: ${responseBodyForError}`;
+                                 console.warn("Error response body was not valid JSON (JSON call), using raw text. Details:", eJson.message);
+                            }
+                        } else {
+                            errorBodyContent += ` Raw Body: (empty body)`;
+                        }
+                    } catch (eText) {
+                        errorBodyContent += " Failed to read error response body as text.";
+                        console.error("Sub-error reading response body (JSON call):", eText);
+                    }
+                    console.error("Gemini API JSON Error Detail:", errorBodyContent);
+                    throw new Error(`Gemini API JSON Error: ${errorBodyContent}`);
+                }
+                const result = await response.json();
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts[0]) {
+                    return JSON.parse(result.candidates[0].content.parts[0].text);
+                }
+                console.warn("Gemini API JSON: Unexpected response structure", result);
+                return null;
+            } catch (error) {
+                console.error("Gemini API JSON Call Error (catch block):", error);
+                throw error;
+            }
+        }
+
+        // --- AI Communication (using Gemini) ---
+        async function fetchAIChatResponse(currentChatHistoryForGemini, storePreview) {
+            console.log('AI Chat მოთხოვნა (Gemini):', { currentChatHistoryForGemini, storePreview });
+            window.navitoBus.emit('chat:user', currentChatHistoryForGemini[currentChatHistoryForGemini.length-1]); 
+            
+            const systemInstruction = `You are Navito-Guide, an AI assistant. Persona: empathetic psychologist + friend + product manager. Tone: short sentences, warm, friendly, no professional jargon. Available commands: add_item, update_item, suggest_exercise, navigate. Current store items count: ${storePreview.totals.items}.`;
+            
+            const geminiMessages = [
+                { role: "user", parts: [{ text: systemInstruction }] }, 
+                { role: "model", parts: [{ text: "გასაგებია! მზად ვარ დასახმარებლად." }] } 
+            ];
+            currentChatHistoryForGemini.forEach(msg => {
+                geminiMessages.push({
+                    role: msg.role === 'assistant' ? 'model' : 'user', 
+                    parts: [{ text: msg.text }]
+                });
+            });
+            
+            try {
+                const responseText = await callGeminiAPI_Text(
+                    `${GEMINI_MODEL_TEXT}:generateContent`, 
+                    currentChatHistoryForGemini[currentChatHistoryForGemini.length -1].text, 
+                    geminiMessages.slice(0, -1) 
+                );
+
+                let commands = [];
+                if (responseText && responseText.toLowerCase().includes("გადაგიყვან წარსულის გვერდზე")) {
+                    commands.push({ command: 'navigate', route: '/past' });
+                }
+
+                const assistantResponse = { role: 'assistant', text: responseText || "ბოდიში, პასუხი ვერ მოიძებნა.", commands: commands.length > 0 ? commands : undefined };
+                window.navitoBus.emit('chat:assistant', assistantResponse);
+                return assistantResponse;
+
+            } catch (error) {
+                 console.error("fetchAIChatResponse Gemini Error:", error);
+                 const assistantResponse = { role: 'assistant', text: "ბოდიში, AI-სთან დაკავშირებისას პრობლემა შეიქმნა.", commands: undefined };
+                 window.navitoBus.emit('chat:assistant', assistantResponse);
+                 return assistantResponse;
+            }
+        }
+        
+        // --- Chat Assistant ---
+        const chatInput = document.getElementById('chat-input');
+        const chatDisplay = document.getElementById('chat-assistant-display');
+
+        function renderChatMessages() {
+            chatDisplay.innerHTML = '';
+            if (chatHistory.length === 0) { chatDisplay.innerHTML = '<p class="text-gray-400">დაიწყე საუბარი Navito-Guide-თან...</p>'; return; }
+            chatHistory.forEach(msg => {
+                const p = document.createElement('p');
+                p.classList.add('mb-1.5', msg.role === 'user' ? 'text-right' : 'text-left');
+                let textContent = msg.text;
+                if (msg.role === 'assistant') {
+                    textContent = textContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/```([\s\S]*?)```/g, '<pre class="text-xs bg-black/50 p-1 my-1 rounded whitespace-pre-wrap">$1</pre>').replace(/\n/g, '<br>');
+                }
+                p.innerHTML = `<span class="px-2 py-1 rounded-lg inline-block ${msg.role === 'user' ? 'bg-[var(--accent-color)]/30' : 'bg-[var(--brand-color)]/30'}">${textContent}</span>`;
+                chatDisplay.appendChild(p);
+            });
+            chatDisplay.scrollTop = chatDisplay.scrollHeight;
+        }
+        
+        chatInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter' && chatInput.value.trim() !== '') {
+                const userInputText = chatInput.value.trim();
+                chatInput.value = '';
+                const userMessageForHistory = { role: 'user', text: userInputText };
+                chatHistory.push(userMessageForHistory);
+                renderChatMessages(); 
+                await saveChatHistoryToDB();
+
+                chatDisplay.innerHTML += `<p class="text-left mb-1.5 animate-pulse"><span class="px-2 py-1 rounded-lg inline-block bg-[var(--brand-color)]/30">AI ფიქრობს...</span></p>`;
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+
+                try {
+                    const storePreview = { totals: { items: lifeItems.length } }; 
+                    const geminiChatHistoryPayload = chatHistory.map(m => ({
+                        role: m.role === 'assistant' ? 'model' : 'user',
+                        parts: [{ text: m.text }]
+                    }));
+
+                    const aiResponse = await fetchAIChatResponse(geminiChatHistoryPayload, storePreview); 
+                    renderChatMessages(); 
+                    await saveChatHistoryToDB();
+                    if (aiResponse.commands) aiResponse.commands.forEach(cmd => handleAICommand(cmd));
+                } catch (error) {
+                    console.error("AI Chat Error (Keypress):", error);
+                    renderChatMessages(); 
+                }
+            }
+        });
+
+        function handleAICommand(command) {
+            console.log("AI Command მიღებულია:", command);
+            if (command.command === 'add_item' && command.item) { addOrUpdateLifeItem(command.item); window.toast(`AI-მ დაამატა: ${command.item.title}`, 'info'); }
+            else if (command.command === 'update_item' && command.id && command.patch) { const itemToUpdate = getLifeItemById(command.id); if (itemToUpdate) { addOrUpdateLifeItem({ ...itemToUpdate, ...command.patch }); window.toast(`AI-მ განაახლა: ${itemToUpdate.title}`, 'info'); } }
+            else if (command.command === 'suggest_exercise' && command.slug) { window.toast(`AI გირჩევთ სავარჯიშოს: ${command.slug}. ${command.reason || ''}`, 'info', 5000); }
+            else if (command.command === 'navigate' && command.route) { navigateTo(command.route); window.toast(`AI-მ გადაგიყვანათ: ${command.route}`, 'info'); }
+        }
+        window.navitoBus.on('data:loaded', (data) => renderChatMessages()); 
+
+        // --- Life Item Edit Modal & Quick Add ---
+        async function openLifeItemEditModal(itemId, initialData = {}) { 
+            const isNew = !itemId; const item = isNew ? { ...initialData } : getLifeItemById(itemId);
+            if (!item && !isNew) { window.toast('Life Item რედაქტირების შეცდომა.', 'error'); return; }
+            item.title = item.title || ''; item.dateISO = item.dateISO || dayjs().toISOString();
+            item.type = item.type || 'event'; item.category = item.category || 'personal';
+            item.payload = item.payload || { details: '' };
+            const categoryOptions = ITEM_CATEGORIES.map(cat => `<option value="${cat}" ${item.category === cat ? 'selected' : ''}>${cat.charAt(0).toUpperCase() + cat.slice(1)}</option>`).join('');
+            const typeOptions = ITEM_TYPES.filter(t => t !== 'exercise').map(t => `<option value="${t}" ${item.type === t ? 'selected' : ''}>${t.charAt(0).toUpperCase() + t.slice(1)}</option>`).join('');
+            const modalHTML = `
+                <h2 class="text-xl font-semibold mb-4 brand-text">${isNew ? 'ახალი Life Item' : 'Life Item რედაქტირება'}</h2>
+                <div class="space-y-3">
+                    <div><label class="block text-sm">სათაური:</label><input type="text" id="edit-item-title" value="${item.title}" class="w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md"></div>
+                    <div><label class="block text-sm">თარიღი:</label><input type="date" id="edit-item-date" value="${dayjs(item.dateISO).format('YYYY-MM-DD')}" class="w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md"></div>
+                    <div><label class="block text-sm">ტიპი:</label><select id="edit-item-type" class="w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md" ${item.type==='exercise'?'disabled':''}>${item.type==='exercise'?`<option value="exercise" selected>Exercise Result</option>`:typeOptions}</select></div>
+                    <div><label class="block text-sm">კატეგორია:</label><select id="edit-item-category" class="w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md">${categoryOptions}</select></div>
+                    <div><label class="block text-sm">დეტალები (Payload):</label><textarea id="edit-item-payload-details" class="w-full mt-1 p-2 bg-black/30 border-white/10 rounded-md h-24" placeholder="დამატებითი ინფორმაცია...">${item.payload.details||(typeof item.payload==='string'?item.payload:'')}</textarea></div>
+                    ${item.type==='exercise'?`<div class="text-xs text-gray-400 p-2 bg-black/20 rounded"><p>სავარჯიშოს შედეგი: <strong>${item.payload.slug||'Unknown'}</strong>.</p><pre class="text-xs whitespace-pre-wrap max-h-24 overflow-y-auto">${JSON.stringify(item.payload,null,1)}</pre></div>`:''}
+                </div>
+                <div class="mt-6 flex justify-between items-center">
+                    <div>${!isNew?`<button id="delete-item-btn" class="p-2 bg-red-700 hover:bg-red-600 text-white rounded-lg text-sm">წაშლა</button>`:'<div></div>'}</div>
+                    <div class="space-x-3"><button id="cancel-edit-item-btn" class="p-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg text-sm">გაუქმება</button><button id="save-edit-item-btn" class="p-2 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm">შენახვა</button></div>
+                </div>`;
+            openModal(modalHTML, () => {
+                document.getElementById('save-edit-item-btn').onclick = async () => {
+                    const payloadDetails = document.getElementById('edit-item-payload-details').value;
+                    const updatedItemData = {
+                        id: isNew ? null : item.id, title: document.getElementById('edit-item-title').value,
+                        dateISO: dayjs(document.getElementById('edit-item-date').value).toISOString(), type: document.getElementById('edit-item-type').value,
+                        category: document.getElementById('edit-item-category').value, payload: item.type==='exercise'?item.payload:{...item.payload,details:payloadDetails}
+                    };
+                    if (!updatedItemData.title.trim()) { window.toast('სათაური აუცილებელია', 'error'); return; }
+                    await addOrUpdateLifeItem(updatedItemData);
+                    window.toast(`Life Item ${isNew?'დაემატა':'განახლდა'}!`, 'success'); closeModal();
+                };
+                if (!isNew) { document.getElementById('delete-item-btn').onclick = async () => { if (confirm(`დარწმუნებული ხართ, რომ გსურთ წაშალოთ: "${item.title}"?`)) { await removeLifeItem(item.id); window.toast('Life Item წაიშალა!', 'success'); closeModal(); } }; }
+                document.getElementById('cancel-edit-item-btn').onclick = closeModal;
+            });
+        }
+
+        // --- Initialization ---
+        async function initializeApp() {
+            console.log(`${APP_NAME} ინიციალიზაცია იწყება...`);
+            await loadAllDataFromDB(); 
+            let currentPath = window.location.hash.slice(1);
+            if (!currentPath || !ROUTES[currentPath]) currentPath = '/'; 
+            renderRoute(currentPath); 
+            window.addEventListener('hashchange', () => {
+                let newPath = window.location.hash.slice(1);
+                if (!newPath || !ROUTES[newPath]) newPath = '/'; 
+                renderRoute(newPath);
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => { e.preventDefault(); const path = link.getAttribute('href').slice(1); navigateTo(path); });
+            });
+            if (currentPath === '/') {
+                 const canvasElement = document.getElementById('lifeWaveCanvas');
+                 if (canvasElement && window.lifeWave && typeof window.lifeWave.init === 'function') { window.lifeWave.init(); canvasElement._initialized = true; }
+            }
+            console.log(`${APP_NAME} აპლიკაცია ინიციალიზებულია.`);
+        }
+        initializeApp();
+    </script>
+</body>
+</html>
 </body>
 </html>
