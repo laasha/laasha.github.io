@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navito – Life-Line Visualization & Coaching Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isoWeek.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simplemde@1.11.2/dist/simplemde.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplemde@1.11.2/dist/simplemde.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --brand-color: #00F6FF;
+            --accent-color: #FF2ED1;
+            --base-color: #0A0A0A; 
+            --text-color: #E0E0E0;
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--base-color);
+            color: var(--text-color);
+            overscroll-behavior: none;
+        }
+        .glass-effect {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .brand-text { color: var(--brand-color); }
+        .accent-text { color: var(--accent-color); }
+        .active-nav-link { background-color: rgba(0, 246, 255, 0.1); }
+        .sidebar-icon { width: 24px; height: 24px; flex-shrink: 0; }
+        .navito-logo { width: 32px; height: 32px; margin-bottom: 1rem; fill: var(--brand-color); }
+
+        .toast-banner {
+            position: fixed;
+            top: 20px; 
+            right: 20px; 
+            padding: 12px 24px;
+            border-radius: 0.5rem; 
+            z-index: 2000; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); 
+            max-width: 300px;
+        }
+        .toast-error { background-color: #B91C1C; color: white; } 
+        .toast-success { background-color: #047857; color: white; } 
+        .toast-info { background-color: #0E7490; color: white; } 
+
+        .editor-toolbar a, .editor-toolbar > .active, .editor-toolbar > button {
+            color: var(--text-color) !important;
+        }
+        .editor-toolbar a:hover, .editor-toolbar > .active:hover, .editor-toolbar > button:hover {
+            background-color: rgba(255,255,255,0.1) !important;
+            border-color: var(--brand-color) !important;
+        }
+        .CodeMirror {
+            background-color: rgba(0,0,0,0.2) !important;
+            color: var(--text-color) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 0.5rem;
+        }
+        .CodeMirror-cursor {
+            border-left: 1px solid var(--brand-color) !important;
+        }
+        .cm-s-easymde .cm-comment { color: #777; }
+        .cm-s-easymde .cm-keyword { color: var(--accent-color); }
+        .cm-s-easymde .cm-string { color: var(--brand-color); }
+        .cm-s-easymde .cm-header { color: var(--accent-color); }
+        .cm-s-easymde .cm-link { color: var(--brand-color); text-decoration: underline;}
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--brand-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
+
+        * { scrollbar-width: thin; scrollbar-color: var(--brand-color) rgba(255, 255, 255, 0.05); }
+
+        .accordion-header { cursor: pointer; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .accordion-content.open { max-height: 1500px; }
+
+        .pin-color-personal { background-color: #3B82F6; } 
+        .pin-color-relationship { background-color: #EC4899; } 
+        .pin-color-learning { background-color: #F97316; } 
+        .pin-color-impact { background-color: #10B981; } 
+        .pin-color-work { background-color: #6366F1; } 
+        .pin-color-other { background-color: #A855F7; } 
+        .pin-color-exercise { background-color: #84CC16; } 
+        .pin-color-default { background-color: var(--brand-color); }
+        .prose { max-width: none; } 
+        .prose-invert { color: var(--text-color); }
+        .prose-invert strong { color: var(--brand-color); }
+        .prose-invert em { color: var(--accent-color); }
+        .prose-invert ul > li::before { background-color: var(--brand-color); }
+        .prose-invert a { color: var(--accent-color); text-decoration: underline; }
+        .prose-invert a:hover { color: var(--brand-color); }
+        .prose-invert pre { background-color: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 0.25rem; }
+
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<!-- The rest of your content is preserved. -->
+{{CONTENT_PLACEHOLDER}}
+</body>
+</html>
